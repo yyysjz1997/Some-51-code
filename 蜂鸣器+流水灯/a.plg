@@ -1,0 +1,85 @@
+<html>
+<body>
+<pre>
+<h1>礦ision3 Build Log</h1>
+<h2>Project:</h2>
+C:\Users\yyy\Desktop\51自己程序\a.uv2
+Project File Date:  04/03/2017
+
+<h2>Output:</h2>
+创建目标 '目标 1'
+PA51汇编 STARTUP.A51 ...
+--- 错误: 无法执行 'C:\Keil\C51\BIN\A51.EXE'
+目标未产生
+创建目标 '目标 1'
+PA51汇编 STARTUP.A51 ...
+--- 错误: 无法执行 'C:\Keil\C51\BIN\A51.EXE'
+目标未产生
+创建目标 '目标 1'
+PA51汇编 STARTUP.A51 ...
+--- 错误: 无法执行 'C:\Keil\C51\BIN\A51.EXE'
+目标未产生
+创建目标 '目标 1'
+PA51汇编 STARTUP.A51 ...
+--- 错误: 无法执行 'C:\Keil\C51\BIN\A51.EXE'
+目标未产生
+创建目标 '目标 1'
+PA51汇编 STARTUP.A51 ...
+--- 错误: 无法执行 'C:\Keil\C51\BIN\A51.EXE'
+目标未产生
+创建目标 '目标 1'
+PA51汇编 STARTUP.A51 ...
+--- 错误: 无法执行 'C:\Keil\C51\BIN\A51.EXE'
+目标未产生
+创建目标 '目标 1'
+PA51汇编 STARTUP.A51 ...
+--- 错误: 无法执行 'C:\Keil\C51\BIN\A51.EXE'
+目标未产生
+创建目标 '目标 1'
+PA51汇编 STARTUP.A51 ...
+--- 错误: 无法执行 'C:\Keil\C51\BIN\A51.EXE'
+目标未产生
+创建目标 '目标 1'
+PA51汇编 STARTUP.A51 ...
+--- 错误: 无法执行 'C:\Keil\C51\BIN\A51.EXE'
+目标未产生
+创建目标 '目标 1'
+编译 main.c ...
+蜂鸣器+流水灯\MAIN.C(5): 错误 C141: syntax error near 'int', expected ')'
+目标未产生
+创建目标 '目标 1'
+编译 main.c ...
+蜂鸣器+流水灯\MAIN.C(5): 错误 C141: syntax error near 'int', expected ')'
+目标未产生
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?BSTV51_INIT?BSTV51
+Program Size: data=10.0 xdata=0 code=98
+"a" - 0 个错误, 1 个警告。
+创建目标 '目标 1'
+连接 ...
+Program Size: data=10.0 xdata=0 code=89
+"a" - 0 个错误, 0 个警告。
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+Program Size: data=10.0 xdata=0 code=89
+"a" - 0 个错误, 0 个警告。
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+Program Size: data=10.0 xdata=0 code=89
+"a" - 0 个错误, 0 个警告。
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+Program Size: data=10.0 xdata=0 code=89
+"a" - 0 个错误, 0 个警告。
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+Program Size: data=10.0 xdata=0 code=89
+创建 HEX 文件 "a" ...
+"a" - 0 个错误, 0 个警告。

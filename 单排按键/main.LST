@@ -1,0 +1,86 @@
+C51 COMPILER V8.06   MAIN                                                                  08/08/2017 00:51:46 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #define uchar unsigned char
+   3          #define uint unsigned int
+   4          sbit key = P3^4;
+   5          sbit WE = P2^7;
+   6          sbit DU = P2^6;
+   7          sbit LED = P1^0;
+   8          uchar code table[]={
+   9          0x3f,0x06,0x5b,0x4f,
+  10          0x66,0x6d,0x7d,0x07,
+  11          0x7f,0x6f,0x77,0x7c,
+  12          0x39,0x5e,0x79,0x71};
+  13          uchar num;
+  14          void delay(uint z);
+  15          
+  16          void main()
+  17          {
+  18   1               num = 0;
+  19   1                       WE = 1;
+  20   1                       P0 = 0xfe;
+  21   1                       WE = 0;
+  22   1      
+  23   1                       DU = 1;
+  24   1                       P0 = table[num];
+  25   1                       DU = 0;
+  26   1      
+  27   1                       key = 1;
+  28   1                       while(1)
+  29   1                       {
+  30   2                              if(key == 0)
+  31   2                              {
+  32   3                                      delay(5);
+  33   3                                      if(key == 0)
+  34   3                                      {
+  35   4                                              LED = 0;
+  36   4                                              num++;
+  37   4                                              if(num == 10)
+  38   4                                              {
+  39   5                                                      num = 0;
+  40   5                                              }                                               
+  41   4                                          DU = 1;
+  42   4                                              P0 = table[num];
+  43   4                                              DU = 0;
+  44   4                                      }
+  45   3                                      while(!key);
+  46   3                                      delay(5);
+  47   3                                      while(!key);  
+  48   3                              }
+  49   2                              else
+  50   2                              {
+  51   3                                      LED = 1;
+  52   3                              }
+  53   2                       }
+  54   1      }
+  55          
+C51 COMPILER V8.06   MAIN                                                                  08/08/2017 00:51:46 PAGE 2   
+
+  56          void delay(uint z)
+  57          {
+  58   1              uint x,y;
+  59   1              for(x=z;x>0;x--)
+  60   1                      for(y=112;y>0;y--);
+  61   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    110    ----
+   CONSTANT SIZE    =     16    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

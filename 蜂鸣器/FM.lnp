@@ -1,0 +1,4 @@
+"main.obj",
+".\bstv51.obj" 
+TO "FM" 
+RAMSIZE(256) 

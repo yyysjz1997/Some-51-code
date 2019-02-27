@@ -1,0 +1,136 @@
+BL51 BANKED LINKER/LOCATER V6.05                                                        08/05/2017  22:52:59  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.05, INVOKED BY:
+C:\KEIL\C51\BIN\BL51.EXE main.obj TO dingshiqi RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  main.obj (MAIN)
+  C:\KEIL\C51\LIB\C51S.LIB (?C_STARTUP)
+
+
+LINK MAP OF MODULE:  dingshiqi (MAIN)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0002H     UNIT         ?DT?MAIN
+            IDATA   000AH     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+                    0003H     0008H                  *** GAP ***
+            CODE    000BH     0003H     ABSOLUTE     
+                    000EH     07F2H                  *** GAP ***
+            CODE    0800H     0041H     UNIT         ?PR?MAIN?MAIN
+            CODE    0841H     0010H     UNIT         ?CO?MAIN
+            CODE    0851H     000CH     UNIT         ?C_C51STARTUP
+            CODE    085DH     0009H     UNIT         ?PR?TIME?MAIN
+
+
+
+OVERLAY MAP OF MODULE:   dingshiqi (MAIN)
+
+
+SEGMENT
+  +--> CALLED SEGMENT
+---------------------
+?C_C51STARTUP
+  +--> ?PR?MAIN?MAIN
+
+?PR?MAIN?MAIN
+  +--> ?CO?MAIN
+
+
+
+SYMBOL TABLE OF MODULE:  dingshiqi (MAIN)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        MAIN
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0080H         PUBLIC        P0
+  D:0090H         PUBLIC        P1
+BL51 BANKED LINKER/LOCATER V6.05                                                      08/05/2017  22:52:59  PAGE 2
+
+
+  D:00A0H         PUBLIC        P2
+  D:00B0H         PUBLIC        P3
+  B:00A8H.7       PUBLIC        EA
+  C:0841H         PUBLIC        table
+  D:00A8H         PUBLIC        IE
+  D:00B8H         PUBLIC        IP
+  C:0800H         PUBLIC        main
+  B:00A0H.6       PUBLIC        dula
+  B:00A0H.7       PUBLIC        wela
+  C:085DH         PUBLIC        time
+  D:0098H         PUBLIC        SCON
+  D:0089H         PUBLIC        TMOD
+  D:0088H         PUBLIC        TCON
+  B:00A8H.1       PUBLIC        ET0
+  D:008CH         PUBLIC        TH0
+  D:008AH         PUBLIC        TL0
+  D:0008H         PUBLIC        num
+  B:0088H.4       PUBLIC        TR0
+  D:00C8H         PUBLIC        T2CON
+  D:0009H         PUBLIC        tt
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          MAIN
+  C:0800H         LINE#         14
+  C:0800H         LINE#         15
+  C:0800H         LINE#         16
+  C:0803H         LINE#         17
+  C:0805H         LINE#         18
+  C:0808H         LINE#         19
+  C:080BH         LINE#         20
+  C:080EH         LINE#         21
+  C:0810H         LINE#         22
+  C:0812H         LINE#         23
+  C:0814H         LINE#         24
+  C:0816H         LINE#         25
+  C:0818H         LINE#         26
+  C:081AH         LINE#         27
+  C:081CH         LINE#         28
+  C:081FH         LINE#         29
+  C:0821H         LINE#         30
+  C:0821H         LINE#         31
+  C:0821H         LINE#         32
+  C:0826H         LINE#         33
+  C:0826H         LINE#         34
+  C:0829H         LINE#         35
+  C:082BH         LINE#         36
+  C:0830H         LINE#         37
+  C:0830H         LINE#         38
+  C:0833H         LINE#         39
+  C:0833H         LINE#         40
+  C:0835H         LINE#         41
+  C:083DH         LINE#         42
+  C:083FH         LINE#         44
+  C:083FH         LINE#         45
+  -------         ENDPROC       MAIN
+  -------         PROC          TIME
+  C:085DH         LINE#         48
+  C:085DH         LINE#         50
+BL51 BANKED LINKER/LOCATER V6.05                                                      08/05/2017  22:52:59  PAGE 3
+
+
+  C:0860H         LINE#         51
+  C:0863H         LINE#         52
+  C:0865H         LINE#         53
+  -------         ENDPROC       TIME
+  -------         ENDMOD        MAIN
+
+******************************************************************************
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 005DH BYTE ( 4%) *
+******************************************************************************
+
+Program Size: data=11.0 xdata=0 code=108
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

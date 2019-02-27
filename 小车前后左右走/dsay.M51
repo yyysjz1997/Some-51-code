@@ -1,0 +1,168 @@
+BL51 BANKED LINKER/LOCATER V6.05                                                        08/15/2017  17:49:24  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.05, INVOKED BY:
+C:\KEIL\C51\BIN\BL51.EXE main.obj TO dsay RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  main.obj (MAIN)
+  C:\KEIL\C51\LIB\C51S.LIB (?C_STARTUP)
+
+
+LINK MAP OF MODULE:  dsay (MAIN)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            IDATA   0008H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+                    0003H     07FDH                  *** GAP ***
+            CODE    0800H     000DH     UNIT         ?PR?RUN?MAIN
+            CODE    080DH     000DH     UNIT         ?PR?BACK?MAIN
+            CODE    081AH     000DH     UNIT         ?PR?RIGHT?MAIN
+            CODE    0827H     000DH     UNIT         ?PR?LEFT?MAIN
+            CODE    0834H     000DH     UNIT         ?PR?STOP?MAIN
+            CODE    0841H     000CH     UNIT         ?C_C51STARTUP
+            CODE    084DH     0005H     UNIT         ?PR?MAIN?MAIN
+
+
+
+OVERLAY MAP OF MODULE:   dsay (MAIN)
+
+
+SEGMENT
+  +--> CALLED SEGMENT
+---------------------
+?C_C51STARTUP
+  +--> ?PR?MAIN?MAIN
+
+?PR?MAIN?MAIN
+  +--> ?PR?RIGHT?MAIN
+
+
+
+SYMBOL TABLE OF MODULE:  dsay (MAIN)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        MAIN
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0090H         PUBLIC        P1
+  D:00B0H         PUBLIC        P3
+BL51 BANKED LINKER/LOCATER V6.05                                                      08/15/2017  17:49:24  PAGE 2
+
+
+  D:00A8H         PUBLIC        IE
+  C:080DH         PUBLIC        back
+  D:00B8H         PUBLIC        IP
+  C:081AH         PUBLIC        right
+  C:084DH         PUBLIC        main
+  C:0827H         PUBLIC        left
+  D:0098H         PUBLIC        SCON
+  D:0088H         PUBLIC        TCON
+  B:0090H.4       PUBLIC        EN1
+  B:0090H.5       PUBLIC        EN2
+  C:0834H         PUBLIC        stop
+  B:0090H.2       PUBLIC        IN1
+  B:0090H.3       PUBLIC        IN2
+  B:0090H.6       PUBLIC        IN3
+  B:0090H.7       PUBLIC        IN4
+  C:0800H         PUBLIC        run
+  D:00C8H         PUBLIC        T2CON
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          RUN
+  C:0800H         LINE#         10
+  C:0800H         LINE#         11
+  C:0800H         LINE#         12
+  C:0802H         LINE#         13
+  C:0804H         LINE#         14
+  C:0806H         LINE#         15
+  C:0808H         LINE#         16
+  C:080AH         LINE#         17
+  C:080CH         LINE#         18
+  -------         ENDPROC       RUN
+  -------         PROC          BACK
+  C:080DH         LINE#         20
+  C:080DH         LINE#         21
+  C:080DH         LINE#         22
+  C:080FH         LINE#         23
+  C:0811H         LINE#         24
+  C:0813H         LINE#         25
+  C:0815H         LINE#         26
+  C:0817H         LINE#         27
+  C:0819H         LINE#         28
+  -------         ENDPROC       BACK
+  -------         PROC          RIGHT
+  C:081AH         LINE#         30
+  C:081AH         LINE#         31
+  C:081AH         LINE#         32
+  C:081CH         LINE#         33
+  C:081EH         LINE#         34
+  C:0820H         LINE#         35
+  C:0822H         LINE#         36
+  C:0824H         LINE#         37
+  C:0826H         LINE#         38
+  -------         ENDPROC       RIGHT
+  -------         PROC          LEFT
+  C:0827H         LINE#         40
+  C:0827H         LINE#         41
+  C:0827H         LINE#         42
+  C:0829H         LINE#         43
+  C:082BH         LINE#         44
+BL51 BANKED LINKER/LOCATER V6.05                                                      08/15/2017  17:49:24  PAGE 3
+
+
+  C:082DH         LINE#         45
+  C:082FH         LINE#         46
+  C:0831H         LINE#         47
+  C:0833H         LINE#         48
+  -------         ENDPROC       LEFT
+  -------         PROC          STOP
+  C:0834H         LINE#         50
+  C:0834H         LINE#         51
+  C:0834H         LINE#         52
+  C:0836H         LINE#         53
+  C:0838H         LINE#         54
+  C:083AH         LINE#         55
+  C:083CH         LINE#         56
+  C:083EH         LINE#         57
+  C:0840H         LINE#         58
+  -------         ENDPROC       STOP
+  -------         PROC          MAIN
+  C:084DH         LINE#         60
+  C:084DH         LINE#         61
+  C:084DH         LINE#         62
+  C:084DH         LINE#         63
+  C:084DH         LINE#         64
+  C:0850H         LINE#         65
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        MAIN
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?RUN?MAIN
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?BACK?MAIN
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?LEFT?MAIN
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?STOP?MAIN
+
+******************************************************************************
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 0046H BYTE ( 3%) *
+******************************************************************************
+
+Program Size: data=9.0 xdata=0 code=85
+LINK/LOCATE RUN COMPLETE.  4 WARNING(S),  0 ERROR(S)

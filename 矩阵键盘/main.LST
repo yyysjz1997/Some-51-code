@@ -1,0 +1,217 @@
+C51 COMPILER V8.06   MAIN                                                                  08/08/2017 18:59:01 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #define uint unsigned int
+   3          #define uchar unsigned char
+   4          sbit DU=P2^6;
+   5          sbit WE=P2^7;
+   6          sbit LED=P1^0;
+   7          
+   8          uchar code table[]={
+   9          0x3f,0x06,0x5b,0x4f,
+  10          0x66,0x6d,0x7d,0x07,
+  11          0x7f,0x6f,0x77,0x7c,
+  12          0x39,0x5e,0x79,0x71,0};
+  13          uchar num,temp;
+  14          
+  15          void delay(uint z);
+  16          void init();
+  17          void display(uchar aa);
+  18          uchar key();
+  19          
+  20          void main()
+  21          {
+  22   1          init();
+  23   1              while(1)
+  24   1              {
+  25   2                      display(key());
+  26   2              }
+  27   1      }
+  28          
+  29          void init()
+  30          {
+  31   1              DU = 1;
+  32   1              P0 = 0;
+  33   1              DU = 0;
+  34   1      
+  35   1              WE = 1;
+  36   1              P0 = 0;
+  37   1              WE = 0;
+  38   1      
+  39   1              num = 16;       
+  40   1      }
+  41          
+  42          
+  43           void delay(uint z)
+  44          {
+  45   1              uint x,y;
+  46   1              for(x=z;x>0;x--)
+  47   1                      for(y=112;y>0;y--);     
+  48   1      }
+  49          
+  50          void display(uchar aa)
+  51          {
+  52   1              DU = 1;
+  53   1              P0 = table[aa];
+  54   1              DU = 0;
+  55   1      }
+C51 COMPILER V8.06   MAIN                                                                  08/08/2017 18:59:01 PAGE 2   
+
+  56          
+  57          uchar key()
+  58          {
+  59   1              P3 = 0xfe;
+  60   1              temp = P3;
+  61   1              temp = temp & 0xf0;
+  62   1              if(temp != 0xf0)
+  63   1              {
+  64   2                              delay(5);
+  65   2                              temp = P3;
+  66   2                              temp = temp & 0xf0;
+  67   2                              while(temp != 0xf0)
+  68   2                              {
+  69   3                                      temp = P3;
+  70   3                                      LED = 0;
+  71   3                                      switch(temp)
+  72   3                                      {
+  73   4                                              case 0xee:num = 0;
+  74   4                                                      break;
+  75   4                                              case 0xde:num = 1;
+  76   4                                                      break;
+  77   4                                              case 0xbe:num = 2;
+  78   4                                                      break;
+  79   4                                              case 0x7e:num = 3;
+  80   4                                                      break;
+  81   4                                      }
+  82   3                                      while (temp != 0xf0)
+  83   3                                      {
+  84   4                                              temp = P3;
+  85   4                                              temp = temp & 0xf0;
+  86   4                                      }
+  87   3                              }
+  88   2              }       
+  89   1      
+  90   1              P3 = 0xfd;
+  91   1              temp = P3;
+  92   1              temp = temp & 0xf0;
+  93   1              if(temp != 0xf0)
+  94   1              {
+  95   2                      delay(5);
+  96   2                      temp = P3;
+  97   2                      temp = temp & 0xf0;
+  98   2                      while(temp !=0xf0)
+  99   2                      {
+ 100   3                              temp = P3;
+ 101   3                              LED = 0;
+ 102   3                              switch(temp)
+ 103   3                              {
+ 104   4                                       case 0xed:num = 4;
+ 105   4                                              break;
+ 106   4                                       case 0xdd:num = 5;
+ 107   4                                              break;
+ 108   4                                       case 0xbd:num = 6;
+ 109   4                                              break;
+ 110   4                                       case 0x7d:num = 7;
+ 111   4                                              break;
+ 112   4                              }
+ 113   3                              while (temp != 0xf0)
+ 114   3                              {
+ 115   4                                      temp = P3;
+ 116   4                                      temp = temp & 0xf0;
+ 117   4                              }
+C51 COMPILER V8.06   MAIN                                                                  08/08/2017 18:59:01 PAGE 3   
+
+ 118   3                      }
+ 119   2              }
+ 120   1      
+ 121   1              P3 = 0xfb;
+ 122   1              temp = P3;
+ 123   1              temp = temp & 0xf0;
+ 124   1              if(temp != 0xf0)
+ 125   1              {
+ 126   2                      delay(5);
+ 127   2                      temp = P3;
+ 128   2                      temp = temp & 0xf0;
+ 129   2                      while(temp !=0xf0)
+ 130   2                      {
+ 131   3                              temp = P3;
+ 132   3                              LED = 0;
+ 133   3                              switch(temp)
+ 134   3                              {
+ 135   4                                       case 0xeb:num = 8;
+ 136   4                                              break;
+ 137   4                                       case 0xdb:num = 9;
+ 138   4                                              break;
+ 139   4                                       case 0xbb:num = 10;
+ 140   4                                              break;
+ 141   4                                       case 0x7b:num = 11;
+ 142   4                                              break;
+ 143   4                              }
+ 144   3                              while (temp != 0xf0)
+ 145   3                              {
+ 146   4                                      temp = P3;
+ 147   4                                      temp = temp & 0xf0;
+ 148   4                              }
+ 149   3                      }
+ 150   2              }
+ 151   1      
+ 152   1              P3 = 0xf7;
+ 153   1              temp = P3;
+ 154   1              temp = temp & 0xf0;
+ 155   1              if(temp != 0xf0)
+ 156   1              {
+ 157   2                      delay(5);
+ 158   2                      temp = P3;
+ 159   2                      temp = temp & 0xf0;
+ 160   2                      while(temp !=0xf0)
+ 161   2                      {
+ 162   3                              temp = P3;
+ 163   3                              LED = 0;
+ 164   3                              switch(temp)
+ 165   3                              {
+ 166   4                                       case 0xe7:num = 12;
+ 167   4                                              break;
+ 168   4                                       case 0xd7:num = 13;
+ 169   4                                              break;
+ 170   4                                       case 0xb7:num = 14;
+ 171   4                                              break;
+ 172   4                                       case 0x77:num = 15;
+ 173   4                                              break;
+ 174   4                              }
+ 175   3                              while (temp != 0xf0)
+ 176   3                              {
+ 177   4                                      temp = P3;
+ 178   4                                      temp = temp & 0xf0;
+ 179   4                              }
+C51 COMPILER V8.06   MAIN                                                                  08/08/2017 18:59:01 PAGE 4   
+
+ 180   3                      }
+ 181   2              }
+ 182   1      
+ 183   1              else 
+ 184   1              {
+ 185   2                      LED = 1;
+ 186   2              }
+ 187   1              return num;
+ 188   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    419    ----
+   CONSTANT SIZE    =     17    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

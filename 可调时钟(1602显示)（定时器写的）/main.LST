@@ -1,0 +1,487 @@
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 23:36:56 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include<reg52.h> //包含头文件，一般情况不需要改动，头文件包含特殊功能寄存器的定义
+   2          #include<intrins.h>
+   3          #define uint unsigned int
+   4          #define uchar unsigned char
+   5          sbit RS = P1^0;   //定义端口
+   6          sbit RW = P1^1;
+   7          sbit EN = P2^5;
+   8          sbit DU = P2^6;
+   9          sbit WE = P2^7;
+  10          sbit S1 = P3^0;          //秒钟停止+光标闪烁
+  11          sbit S2 = P3^1;
+  12          sbit S3 = P3^2;
+  13          sbit rd = P3^7;  //使用最右端的前三个键来控制
+  14          uint x,y;
+  15          uchar num,num_m;
+  16          uchar count,shi,fen,miao;
+  17          uchar S1num;
+  18          
+  19          void cmg88()//关数码管
+  20          {
+  21   1                      DU = 1;
+  22   1                      P0 = 0X00;
+  23   1                      DU = 0;
+  24   1                      WE = 0;
+  25   1      }
+  26          /*------------------------------------------------
+  27           uS延时函数，含有输入参数 unsigned char t，无返回值
+  28           unsigned char 是定义无符号字符变量，其值的范围是
+  29           0~255 这里使用晶振12M，精确延时请使用汇编,大致延时
+  30           长度如下 T=tx2+5 uS
+  31          ------------------------------------------------*/
+  32          void DelayUs2x(unsigned char t)
+  33          {
+  34   1              while(--t);
+  35   1      }
+  36          /*------------------------------------------------
+  37           mS延时函数，含有输入参数 unsigned char t，无返回值
+  38           unsigned char 是定义无符号字符变量，其值的范围是
+  39           0~255 这里使用晶振12M，精确延时请使用汇编
+  40          ------------------------------------------------*/
+  41          void DelayMs(unsigned char t)
+  42          {
+  43   1      
+  44   1       while(t--)
+  45   1       {
+  46   2           //大致延时1mS
+  47   2           DelayUs2x(245);
+  48   2               DelayUs2x(245);
+  49   2       }
+  50   1      }
+  51          
+  52           bit LCD_Check_Busy(void)
+  53           {
+  54   1               P0 = 0xff;
+  55   1               RS = 0;
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 23:36:56 PAGE 2   
+
+  56   1               RW = 1;
+  57   1               EN = 0;
+  58   1               _nop_();
+  59   1               EN = 1;
+  60   1               return (bit)(P0 & 0x80);         //强制取最高位
+  61   1       }
+  62          
+  63           void LCD_Write_Com(unsigned char com)
+  64           {
+  65   1               while(LCD_Check_Busy()); //忙则等待
+  66   1               RS=0;
+  67   1               RW=0;
+  68   1               EN=1;
+  69   1               P0 = com;
+  70   1               _nop_();
+  71   1               EN=0;
+  72   1       }
+  73          
+  74           void LCD_Write_Data(unsigned char Data)
+  75           {
+  76   1               while(LCD_Check_Busy()); //忙则等待
+  77   1               RS=1;
+  78   1               RW=0;
+  79   1               EN=1;
+  80   1               P0 = Data;
+  81   1               _nop_();
+  82   1               EN=0;
+  83   1       }
+  84          
+  85           void LCD_Clear(void)
+  86           {
+  87   1               LCD_Write_Com(0x01);
+  88   1               DelayMs(5);
+  89   1       }
+  90          
+  91           void LCD_Write_String(unsigned char x,unsigned char y,unsigned char *s)
+  92           {
+  93   1               if (y == 0)
+  94   1               {
+  95   2                              LCD_Write_Com(0x80 + x);     //表示第一行
+  96   2               }
+  97   1               else
+  98   1               {
+  99   2                              LCD_Write_Com(0xC0 + x);      //表示第二行
+ 100   2               }
+ 101   1               while (*s)
+ 102   1               {
+ 103   2                              LCD_Write_Data( *s);
+ 104   2                              s ++;
+ 105   2               }
+ 106   1       }
+ 107          
+ 108           void LCD_Write_Char(unsigned char x,unsigned char y,unsigned char Data)
+ 109           {
+ 110   1               if (y == 0)
+ 111   1               {
+ 112   2                      LCD_Write_Com(0x80 + x);
+ 113   2               }
+ 114   1               else
+ 115   1               {
+ 116   2                      LCD_Write_Com(0xC0 + x);
+ 117   2               }
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 23:36:56 PAGE 3   
+
+ 118   1               LCD_Write_Data( Data);
+ 119   1       }
+ 120          
+ 121           void LCD_Init(void)            //静态初始化
+ 122           {
+ 123   1                 cmg88();//关数码管，点阵函数 
+ 124   1         LCD_Write_Com(0x38);    /*显示模式设置*/
+ 125   1         DelayMs(5);
+ 126   1         LCD_Write_Com(0x38);
+ 127   1         DelayMs(5);
+ 128   1         LCD_Write_Com(0x38);
+ 129   1         DelayMs(5);
+ 130   1         LCD_Write_Com(0x38);
+ 131   1         LCD_Write_Com(0x08);    /*显示关闭*/
+ 132   1         LCD_Write_Com(0x01);    /*显示清屏*/
+ 133   1         LCD_Write_Com(0x06);    /*显示光标移动设置*/
+ 134   1         DelayMs(5);
+ 135   1         LCD_Write_Com(0x0C);    /*显示开及光标设置*/
+ 136   1         //LCD_Write_Com(0x0f);
+ 137   1                      LCD_Clear();//清屏
+ 138   1                 //   while (1)
+ 139   1              //      {
+ 140   1      
+ 141   1                              LCD_Write_String(0,0,"   2017-08-11");
+ 142   1                              LCD_Write_String(0,1,"    00:00:00");
+ 143   1              //      }
+ 144   1         TMOD = 0x01;
+ 145   1         TH0 = (65536 - 50000) / 256;
+ 146   1         TL0 = (65536 - 50000) % 256;
+ 147   1         EA = 1;
+ 148   1         ET0 = 1;
+ 149   1         TR0 = 1;
+ 150   1       }
+ 151           
+ 152          void delay(uint z)
+ 153          {
+ 154   1              uint x,y;
+ 155   1              for(x=z;z>0;z--)
+ 156   1                      for(y=112;y>0;y--);
+ 157   1      }
+ 158          
+ 159          void write_sfm(uchar add,uchar date)
+ 160          {
+ 161   1              uchar shi,ge;
+ 162   1              shi = date / 10;
+ 163   1              ge = date % 10;
+ 164   1              LCD_Write_Com(0x80+0x40+add);
+ 165   1              LCD_Write_Data(0x30+shi);
+ 166   1              LCD_Write_Data(0x30+ge);
+ 167   1      }
+ 168          
+ 169          void key()
+ 170          {
+ 171   1               rd = 0;
+ 172   1               if(S1 == 0)
+ 173   1               {
+ 174   2                      delay(5);
+ 175   2                      if(S1 == 0)
+ 176   2                      {
+ 177   3                          S1num++;
+ 178   3                          while(!S1);            //等松手
+ 179   3                              if(S1num == 1)
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 23:36:56 PAGE 4   
+
+ 180   3                              {
+ 181   4                                      TR0 = 0;  //定时器关闭，时间停止
+ 182   4                                      LCD_Write_Com(0x80+0x40+10);   //光标回到秒
+ 183   4                                      LCD_Write_Com(0x0f);   //光标闪烁
+ 184   4                              }
+ 185   3                              if(S1num == 2)
+ 186   3                              {
+ 187   4                                      LCD_Write_Com(0x80+0x40+7);   //光标回到秒
+ 188   4                                      LCD_Write_Com(0x0f);   //光标闪烁
+ 189   4                              }
+ 190   3                              if(S1num == 3)
+ 191   3                              {
+ 192   4                                      LCD_Write_Com(0x80+0x40+4);   //光标回到秒
+ 193   4                                      LCD_Write_Com(0x0f);   //光标闪烁
+ 194   4                              }
+ 195   3                              if(S1num == 4)
+ 196   3                              {
+ 197   4                                  S1num = 0;
+ 198   4                                      LCD_Write_Com(0x0c);   //光标不闪烁+不显示
+ 199   4                                      TR0 = 1;
+ 200   4                              }                               
+ 201   3                      }
+ 202   2               }
+ 203   1               if(S1num != 0)
+ 204   1              {
+ 205   2                      if(S2 == 0)
+ 206   2                      {
+ 207   3                              delay(5);
+ 208   3                              if(S2 == 0)
+ 209   3                              {
+ 210   4                                  while(!S2);
+ 211   4                                      if(S1num == 1)    //秒位上
+ 212   4                                      {
+ 213   5                                              miao++;
+ 214   5                                              if(miao == 60)
+ 215   5                                              {
+ 216   6                                                      miao = 0;
+ 217   6                                              }
+ 218   5                                              write_sfm(10,miao);
+ 219   5                                              LCD_Write_Com(0x80+0x40+10);
+ 220   5                                      }
+ 221   4                                      if(S1num == 2)     //分位上
+ 222   4                                      {
+ 223   5                                              fen++;
+ 224   5                                              if(fen == 60)
+ 225   5                                              {
+ 226   6                                                      fen = 0;
+ 227   6                                              }
+ 228   5                                              write_sfm(7,fen);
+ 229   5                                              LCD_Write_Com(0x80+0x40+7);
+ 230   5                                      }
+ 231   4                                      if(S1num == 3)     //十位上
+ 232   4                                      {
+ 233   5                                              shi++;
+ 234   5                                              if(shi == 24)
+ 235   5                                              {
+ 236   6                                                      shi = 0;
+ 237   6                                              }
+ 238   5                                              write_sfm(4,shi);
+ 239   5                                              LCD_Write_Com(0x80+0x40+4);
+ 240   5                                      }       
+ 241   4                              }
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 23:36:56 PAGE 5   
+
+ 242   3                      }
+ 243   2                      if(S3 == 0)
+ 244   2                      {
+ 245   3                              delay(5);
+ 246   3                              if(S3 == 0)
+ 247   3                              {
+ 248   4                                      while(!S3);
+ 249   4                                      if(S1num == 1)
+ 250   4                                      {                                       
+ 251   5                                              if(miao == 0)
+ 252   5                                              {
+ 253   6                                                      miao = 60;
+ 254   6                                                      write_sfm(10,miao);
+ 255   6                                                      LCD_Write_Com(0x80+0x40+10);
+ 256   6                                              }
+ 257   5                                              miao--; 
+ 258   5                                              write_sfm(10,miao);
+ 259   5                                              LCD_Write_Com(0x80+0x40+10);
+ 260   5                                      }
+ 261   4                                      if(S1num == 2)
+ 262   4                                      {
+ 263   5                                              if(fen == 0)
+ 264   5                                              {
+ 265   6                                                      fen = 60;
+ 266   6                                                      write_sfm(7,fen);
+ 267   6                                                      LCD_Write_Com(0x80+0x40+7);
+ 268   6                                              }
+ 269   5                                              fen--;  
+ 270   5                                              write_sfm(7,fen);
+ 271   5                                              LCD_Write_Com(0x80+0x40+7);
+ 272   5                                      }
+ 273   4                                      if(S1num == 3)
+ 274   4                                      {
+ 275   5                                              if(shi == 0)
+ 276   5                                              {
+ 277   6                                                      shi = 24;
+ 278   6                                                      write_sfm(4,shi);
+ 279   6                                                      LCD_Write_Com(0x80+0x40+4);
+ 280   6                                              }
+ 281   5                                              shi--;  
+ 282   5                                              write_sfm(4,shi);
+ 283   5                                              LCD_Write_Com(0x80+0x40+4);
+ 284   5                                      }
+ 285   4                              }
+ 286   3                      }
+ 287   2              }
+ 288   1      }
+ 289          
+ 290          void main(void)
+ 291          {
+ 292   1              LCD_Init();   //静态初始化
+ 293   1              while(1)
+ 294   1              {
+ 295   2                      key();
+ 296   2              }       
+ 297   1      }
+ 298          
+ 299          void timer0()interrupt 1
+ 300          {
+ 301   1              TH0 = (65536 - 50000) / 256;
+ 302   1          TL0 = (65536 - 50000) % 256;
+ 303   1              count++;
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 23:36:56 PAGE 6   
+
+ 304   1              if(count == 18)
+ 305   1                      {
+ 306   2                              count = 0;
+ 307   2                              miao++;
+ 308   2                              if(miao == 60)
+ 309   2                              {
+ 310   3                                      miao = 0;
+ 311   3                                      fen++;
+ 312   3                                      if(fen == 60)
+ 313   3                                      {
+ 314   4                                              fen = 0;
+ 315   4                                              shi++;
+ 316   4                                              if(shi == 24)
+ 317   4                                              {
+ 318   5                                                      shi = 0;
+ 319   5                                              }
+ 320   4                                              write_sfm(4,shi);
+ 321   4                                      }
+ 322   3                                      write_sfm(7,fen);
+ 323   3                              }
+ 324   2                              write_sfm(10,miao);                      
+ 325   2                      }
+ 326   1      }
+ 327          
+ 328          
+ 329          
+ 330          
+ 331          
+ 332          
+ 333          
+ 334          
+ 335          
+ 336          
+ 337          
+ 338          /*#include <reg52.h>
+ 339          #define uchar unsigned char
+ 340          #define uint unsigned int
+ 341          sbit DU = P2^6;
+ 342          sbit WE = P2^7;
+ 343          sbit RS = P1^0;
+ 344          sbit EN = P2^5;
+ 345          uchar code table[]="   2017-8-11";
+ 346          uchar code table1[]="    00:00:00";
+ 347          
+ 348          void delay(uchar z)
+ 349          {
+ 350                  uint x,y;
+ 351                  for(x=z;x>0;x--)
+ 352                          for(y=112;y>0;y--);
+ 353          }
+ 354          
+ 355          void write_com(uchar com)
+ 356          {
+ 357                  RS = 0;
+ 358                  EN = 0;
+ 359                  P0 = com;
+ 360                  delay(5);
+ 361                  EN = 1;
+ 362                  delay(5);
+ 363                  EN = 0; 
+ 364          }
+ 365          
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 23:36:56 PAGE 7   
+
+ 366          void write_date(uchar date)
+ 367          {
+ 368                  RS = 1;
+ 369                  EN = 0;
+ 370                  P0 = date;
+ 371                  delay(5);
+ 372                  EN = 1;
+ 373                  delay(5);
+ 374                  EN = 0; 
+ 375          }
+ 376          
+ 377          void init()
+ 378          {
+ 379                  uchar num;
+ 380                  DU = 1;
+ 381                  P0 = 0x00;
+ 382                  DU = 0;
+ 383                  WE = 1;
+ 384                  P0 = 0x00;
+ 385                  WE = 0;
+ 386          
+ 387              write_com(0x38);
+ 388                  write_com(0x0c);
+ 389                  write_com(0x06);
+ 390                  write_com(0x01);
+ 391                  write_com(0x80);
+ 392          
+ 393                  for(num = 0;num < 12;num++)
+ 394                  {
+ 395                          write_date(table[num]);
+ 396                          delay(5);
+ 397                  }
+ 398                  write_com(0x80+0x40);
+ 399                  for(num = 0;num < 12;num++)
+ 400                  {
+ 401                          write_date(table1[num]);
+ 402                          delay(5);
+ 403                  }
+ 404          }
+ 405          
+ 406           void LCD_Init(void)            //静态初始化
+ 407           {
+ 408              uchar num;
+ 409                  DU = 1;
+ 410                  P0 = 0x00;
+ 411                  DU = 0;
+ 412                  WE = 1;
+ 413                  P0 = 0x00;
+ 414                  WE = 0;
+ 415          
+ 416              write_com(0x38);    /*显示模式设置*/
+ 417          /*    delay(5);
+ 418              write_com(0x38);
+ 419              delay(5);
+ 420              write_com(0x38);
+ 421              delay(5);
+ 422              write_com(0x38);
+ 423              write_com(0x08);    /*显示关闭*/
+ 424          /*    write_com(0x01);    /*显示清屏*/
+ 425          /*    write_com(0x06);    /*显示光标移动设置*/
+ 426          /*    delay(5);
+ 427                  write_com(0x0c);
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 23:36:56 PAGE 8   
+
+ 428              write_com(0x80);    
+ 429          
+ 430                  for(num = 0;num < 12;num++)
+ 431                  {
+ 432                          write_date(table[num]);
+ 433                          delay(5);
+ 434                  }
+ 435                  write_com(0x80+0x40);
+ 436                  for(num = 0;num < 12;num++)
+ 437                  {
+ 438                          write_date(table1[num]);
+ 439                          delay(5);
+ 440                  }
+ 441           }
+ 442          
+ 443          void main()
+ 444          {
+ 445          //      init();
+ 446                  LCD_Init();
+ 447                  while(1);
+ 448          }
+ 449          */
+ 450          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    716    ----
+   CONSTANT SIZE    =     27    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     11       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

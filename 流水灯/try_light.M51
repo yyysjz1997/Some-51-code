@@ -1,0 +1,138 @@
+BL51 BANKED LINKER/LOCATER V6.05                                                        07/23/2017  00:27:50  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.05, INVOKED BY:
+C:\KEIL\C51\BIN\BL51.EXE light.obj, bstv51.obj TO try_light RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  light.obj (LIGHT)
+  bstv51.obj (BSTV51)
+  C:\KEIL\C51\LIB\C51S.LIB (?C_STARTUP)
+
+
+LINK MAP OF MODULE:  try_light (LIGHT)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            IDATA   0008H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+                    0003H     07FDH                  *** GAP ***
+            CODE    0800H     0024H     UNIT         ?PR?MAIN?LIGHT
+            CODE    0824H     001EH     UNIT         ?PR?_DELAY?LIGHT
+            CODE    0842H     000CH     UNIT         ?C_C51STARTUP
+            CODE    084EH     0009H     UNIT         ?PR?BSTV51_INIT?BSTV51
+
+
+
+OVERLAY MAP OF MODULE:   try_light (LIGHT)
+
+
+SEGMENT
+  +--> CALLED SEGMENT
+---------------------
+?C_C51STARTUP
+  +--> ?PR?MAIN?LIGHT
+
+?PR?MAIN?LIGHT
+  +--> ?PR?_DELAY?LIGHT
+
+
+
+SYMBOL TABLE OF MODULE:  try_light (LIGHT)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        LIGHT
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0090H         PUBLIC        P1
+  D:00A0H         PUBLIC        P2
+  D:00B0H         PUBLIC        P3
+  D:00A8H         PUBLIC        IE
+BL51 BANKED LINKER/LOCATER V6.05                                                      07/23/2017  00:27:50  PAGE 2
+
+
+  C:0824H         PUBLIC        _delay
+  B:00A0H.3       PUBLIC        FM
+  D:00B8H         PUBLIC        IP
+  C:0800H         PUBLIC        main
+  D:0098H         PUBLIC        SCON
+  D:0088H         PUBLIC        TCON
+  D:00C8H         PUBLIC        T2CON
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          _DELAY
+  D:0006H         SYMBOL        xms
+  -------         DO            
+  D:0006H         SYMBOL        i
+  D:0004H         SYMBOL        j
+  -------         ENDDO         
+  C:0824H         LINE#         7
+  C:0824H         LINE#         8
+  C:0824H         LINE#         10
+  C:082DH         LINE#         11
+  C:0841H         LINE#         12
+  -------         ENDPROC       _DELAY
+  -------         PROC          MAIN
+  C:0800H         LINE#         14
+  C:0800H         LINE#         15
+  C:0800H         LINE#         16
+  C:0803H         LINE#         17
+  C:0803H         LINE#         18
+  C:0803H         LINE#         19
+  C:0810H         LINE#         20
+  C:0812H         LINE#         21
+  C:0819H         LINE#         22
+  C:081BH         LINE#         23
+  C:0822H         LINE#         24
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        LIGHT
+
+  -------         MODULE        BSTV51
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0090H         PUBLIC        P1
+  D:00A0H         PUBLIC        P2
+  D:00B0H         PUBLIC        P3
+  D:00A8H         PUBLIC        IE
+  B:00A0H.3       PUBLIC        FM
+  B:00A0H.5       PUBLIC        EN
+  B:00A0H.6       PUBLIC        CS
+  D:00B8H         PUBLIC        IP
+  D:0098H         PUBLIC        SCON
+  D:0088H         PUBLIC        TCON
+  C:084EH         PUBLIC        bstv51_init
+  D:00C8H         PUBLIC        T2CON
+  B:00A0H.7       PUBLIC        RST
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          BSTV51_INIT
+  C:084EH         LINE#         14
+  C:084EH         LINE#         15
+  C:084EH         LINE#         17
+  C:0850H         LINE#         18
+  C:0852H         LINE#         19
+BL51 BANKED LINKER/LOCATER V6.05                                                      07/23/2017  00:27:50  PAGE 3
+
+
+  C:0854H         LINE#         20
+  C:0856H         LINE#         21
+  -------         ENDPROC       BSTV51_INIT
+  -------         ENDMOD        BSTV51
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?BSTV51_INIT?BSTV51
+
+******************************************************************************
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 004BH BYTE ( 3%) *
+******************************************************************************
+
+Program Size: data=9.0 xdata=0 code=90
+LINK/LOCATE RUN COMPLETE.  1 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,102 @@
+<html>
+<body>
+<pre>
+<h1>礦ision3 Build Log</h1>
+<h2>Project:</h2>
+C:\Users\yyy\Desktop\学习\51自己程序\红外遥控小车\yyre.uv2
+Project File Date:  08/15/2017
+
+<h2>Output:</h2>
+创建目标 '目标 1'
+编译 main.c ...
+MAIN.C(103): 警告 C206: 'run': missing function-prototype
+MAIN.C(104): 警告 C206: 'back': missing function-prototype
+MAIN.C(105): 警告 C206: 'left': missing function-prototype
+MAIN.C(106): 警告 C206: 'right': missing function-prototype
+MAIN.C(107): 警告 C206: 'stop': missing function-prototype
+MAIN.C(254): 错误 C231: 'run': redefinition
+MAIN.C(261): 错误 C231: 'run': redefinition
+MAIN.C(264): 错误 C231: 'back': redefinition
+MAIN.C(271): 错误 C231: 'back': redefinition
+MAIN.C(274): 错误 C231: 'right': redefinition
+MAIN.C(281): 错误 C231: 'right': redefinition
+MAIN.C(284): 错误 C231: 'left': redefinition
+MAIN.C(291): 错误 C231: 'left': redefinition
+MAIN.C(294): 错误 C231: 'stop': redefinition
+MAIN.C(301): 错误 C231: 'stop': redefinition
+目标未产生
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD_WRITE_CHAR?MAIN
+Program Size: data=48.3 xdata=0 code=565
+"yyre" - 0 个错误, 1 个警告。
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD_WRITE_CHAR?MAIN
+Program Size: data=48.3 xdata=0 code=565
+创建 HEX 文件 "yyre" ...
+"yyre" - 0 个错误, 1 个警告。
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD_WRITE_STRING?MAIN
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD_WRITE_CHAR?MAIN
+Program Size: data=48.3 xdata=0 code=539
+创建 HEX 文件 "yyre" ...
+"yyre" - 0 个错误, 2 个警告。
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD_WRITE_STRING?MAIN
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD_WRITE_CHAR?MAIN
+Program Size: data=48.3 xdata=0 code=539
+创建 HEX 文件 "yyre" ...
+"yyre" - 0 个错误, 2 个警告。
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD_WRITE_STRING?MAIN
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD_WRITE_CHAR?MAIN
+Program Size: data=48.3 xdata=0 code=539
+创建 HEX 文件 "yyre" ...
+"yyre" - 0 个错误, 2 个警告。
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD_WRITE_STRING?MAIN
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD_WRITE_CHAR?MAIN
+Program Size: data=48.3 xdata=0 code=539
+创建 HEX 文件 "yyre" ...
+"yyre" - 0 个错误, 2 个警告。
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD_WRITE_STRING?MAIN
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD_WRITE_CHAR?MAIN
+Program Size: data=48.3 xdata=0 code=530
+创建 HEX 文件 "yyre" ...
+"yyre" - 0 个错误, 2 个警告。
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD_WRITE_STRING?MAIN
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD_WRITE_CHAR?MAIN
+Program Size: data=48.3 xdata=0 code=539
+创建 HEX 文件 "yyre" ...
+"yyre" - 0 个错误, 2 个警告。

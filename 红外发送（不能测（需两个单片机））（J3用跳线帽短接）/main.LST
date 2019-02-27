@@ -1,0 +1,290 @@
+C51 COMPILER V8.06   MAIN                                                                  08/13/2017 09:52:37 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          
+   3          #define uchar unsigned char
+   4          #define uint unsigned int
+   5          sbit out=P1^5;//发送IO口
+   6          
+   7          void delay(uint xms)
+   8          {
+   9   1              uint i,j;
+  10   1              for(i=xms;i>0;i--)                    //i=xms即延时约xms毫秒
+  11   1                      for(j=112;j>0;j--);
+  12   1      }
+  13          
+  14          void delay560us(void)   //560us延迟函数
+  15          {
+  16   1              uint j;
+  17   1              for(j=63;j>0;j--);
+  18   1      }
+  19          
+  20          void delay4500us(void)     //4.5ms延迟函数
+  21          {
+  22   1              uint j;
+  23   1              for(j=516;j>0;j--);
+  24   1      }
+  25          
+  26          void khz_2(uint num)             //38KHZ脉冲 占空比1:2
+  27          {
+  28   1          for(;num>0;num--)    //num是持续时间
+  29   1               {
+  30   2      //        _nop_();
+  31   2                out=~out;
+  32   2               }
+  33   1      }
+  34          
+  35          void send0_a(void)    //发送0
+  36          {
+  37   1         khz_2(42) ;   //0.56ms的38kHZ的脉冲
+  38   1         //khz_3(21) ;
+  39   1         out=1;
+  40   1         delay560us();
+  41   1      }
+  42          
+  43          void send1_a(void)              //发送1
+  44          {
+  45   1         khz_2(42) ;    //0.56ms的38kHZ的脉冲
+  46   1         //khz_3(21) ;
+  47   1         out=1;
+  48   1         delay560us();
+  49   1         delay560us();
+  50   1         delay560us();
+  51   1      }
+  52          
+  53          void leadcode_a(void)   //发送引导码
+  54          {
+  55   1           khz_2(690) ;     //9ms的38kHZ的脉冲
+C51 COMPILER V8.06   MAIN                                                                  08/13/2017 09:52:37 PAGE 2   
+
+  56   1               //khz_3(345) ;
+  57   1               out=1;
+  58   1               delay4500us();
+  59   1      
+  60   1      }
+  61          
+  62          const uchar TabHL1[12]={0x30,0x18,0x7a,0x10,0x38,0x5a,0x42,0x4a,0x52,0x00,0xff,0xa6};//数据码码表1-9&2字节
+             -用户码
+  63          
+  64          void Send8Bit(uchar d)                    //发送一字节数据
+  65          {
+  66   1          if(d&0x80){ send1_a();}   //一位一位的判断
+  67   1              else{           send0_a();}
+  68   1              if(d&0x40){     send1_a();}
+  69   1              else{           send0_a();}
+  70   1              if(d&0x20){     send1_a();}
+  71   1              else{           send0_a();}
+  72   1              if(d&0x10){     send1_a();}
+  73   1              else{           send0_a();}
+  74   1              if(d&0x08){     send1_a();}
+  75   1              else{           send0_a();}
+  76   1              if(d&0x04){     send1_a();}
+  77   1              else{           send0_a();}
+  78   1              if(d&0x02){     send1_a();}
+  79   1              else{           send0_a();}
+  80   1              if(d&0x01){     send1_a();}
+  81   1              else{           send0_a();}
+  82   1      
+  83   1      }
+  84          
+  85          
+  86          void usercode_xuexiban()          //发送用户码 00FF
+  87          {
+  88   1           Send8Bit(TabHL1[9]);
+  89   1               Send8Bit(TabHL1[10]);
+  90   1      }
+  91          
+  92          void xuexiban_1()       //00110000              发送”1“的全部信号
+  93           {
+  94   1           leadcode_a();   //引导码
+  95   1           usercode_xuexiban();   //用户码
+  96   1           Send8Bit(TabHL1[0]);
+  97   1               Send8Bit(TabHL1[0]);//数据反码（校验用）（直接用的源码，这样方便简单，但是稳定性不好）
+  98   1       }
+  99          
+ 100           void xuexiban_2()      //00011000
+ 101           {
+ 102   1           leadcode_a();
+ 103   1           usercode_xuexiban();
+ 104   1               Send8Bit(TabHL1[1]);
+ 105   1               Send8Bit(TabHL1[1]);
+ 106   1       }
+ 107          
+ 108           void xuexiban_3()      //01111010
+ 109           {
+ 110   1           leadcode_a();
+ 111   1           usercode_xuexiban();
+ 112   1               Send8Bit(TabHL1[2]);
+ 113   1               Send8Bit(TabHL1[2]);
+ 114   1       }
+ 115          
+ 116           void xuexiban_4()      //00010000
+C51 COMPILER V8.06   MAIN                                                                  08/13/2017 09:52:37 PAGE 3   
+
+ 117           {
+ 118   1           leadcode_a();
+ 119   1           usercode_xuexiban();
+ 120   1               Send8Bit(TabHL1[3]);
+ 121   1               Send8Bit(TabHL1[3]);
+ 122   1       }
+ 123          
+ 124           void xuexiban_5()      //00111000
+ 125           {
+ 126   1           leadcode_a();
+ 127   1           usercode_xuexiban();
+ 128   1               Send8Bit(TabHL1[4]);
+ 129   1               Send8Bit(TabHL1[4]);
+ 130   1       }
+ 131          
+ 132           void xuexiban_6()      //01011010
+ 133           {
+ 134   1           leadcode_a();
+ 135   1           usercode_xuexiban();
+ 136   1               Send8Bit(TabHL1[5]);
+ 137   1               Send8Bit(TabHL1[5]);
+ 138   1       }
+ 139          
+ 140           void xuexiban_7()      //01000010
+ 141           {
+ 142   1           leadcode_a();
+ 143   1           usercode_xuexiban();
+ 144   1               Send8Bit(TabHL1[6]);
+ 145   1               Send8Bit(TabHL1[6]);
+ 146   1       }
+ 147          
+ 148           void xuexiban_8()      //01001010
+ 149           {
+ 150   1           leadcode_a();
+ 151   1           usercode_xuexiban();
+ 152   1           Send8Bit(TabHL1[7]);
+ 153   1               Send8Bit(TabHL1[7]);
+ 154   1       }
+ 155          
+ 156            void xuexiban_9()     //01010010
+ 157           {
+ 158   1           leadcode_a();
+ 159   1           usercode_xuexiban();
+ 160   1           Send8Bit(TabHL1[8]);
+ 161   1               Send8Bit(TabHL1[8]);
+ 162   1       }
+ 163          
+ 164           void Remote_control()   //按键发送，矩阵键盘前九个按键分别是1-9
+ 165           {
+ 166   1          uchar temp;
+ 167   1              P3 = 0xfe;
+ 168   1              temp = P3;
+ 169   1              temp = temp & 0xf0;
+ 170   1              if(temp != 0xf0)
+ 171   1              {
+ 172   2                              delay(5);
+ 173   2                              temp = P3;
+ 174   2                              temp = temp & 0xf0;
+ 175   2                              while(temp != 0xf0)
+ 176   2                              {
+ 177   3                                      temp = P3;
+ 178   3                                      switch(temp)
+C51 COMPILER V8.06   MAIN                                                                  08/13/2017 09:52:37 PAGE 4   
+
+ 179   3                                      {
+ 180   4                                              case 0xee:xuexiban_1();
+ 181   4                                                      break;
+ 182   4                                              case 0xde:xuexiban_2();
+ 183   4                                                      break;
+ 184   4                                              case 0xbe:xuexiban_3();
+ 185   4                                                      break;
+ 186   4                                              case 0x7e:xuexiban_4();
+ 187   4                                                      break;
+ 188   4                                      }
+ 189   3                                      while (temp != 0xf0)
+ 190   3                                      {
+ 191   4                                              temp = P3;
+ 192   4                                              temp = temp & 0xf0;
+ 193   4                                      }
+ 194   3                              }
+ 195   2              }       
+ 196   1      
+ 197   1              P3 = 0xfd;
+ 198   1              temp = P3;
+ 199   1              temp = temp & 0xf0;
+ 200   1              if(temp != 0xf0)
+ 201   1              {
+ 202   2                      delay(5);
+ 203   2                      temp = P3;
+ 204   2                      temp = temp & 0xf0;
+ 205   2                      while(temp !=0xf0)
+ 206   2                      {
+ 207   3                              temp = P3;
+ 208   3                              switch(temp)
+ 209   3                              {
+ 210   4                                       case 0xed:xuexiban_5();
+ 211   4                                              break;
+ 212   4                                       case 0xdd:xuexiban_6();
+ 213   4                                              break;
+ 214   4                                       case 0xbd:xuexiban_7();
+ 215   4                                              break;
+ 216   4                                       case 0x7d:xuexiban_8();
+ 217   4                                              break;
+ 218   4                              }
+ 219   3                              while (temp != 0xf0)
+ 220   3                              {
+ 221   4                                      temp = P3;
+ 222   4                                      temp = temp & 0xf0;
+ 223   4                              }
+ 224   3                      }
+ 225   2              }
+ 226   1      
+ 227   1              P3 = 0xfb;
+ 228   1              temp = P3;
+ 229   1              temp = temp & 0xf0;
+ 230   1              if(temp != 0xf0)
+ 231   1              {
+ 232   2                      delay(5);
+ 233   2                      temp = P3;
+ 234   2                      temp = temp & 0xf0;
+ 235   2                      while(temp !=0xf0)
+ 236   2                      {
+ 237   3                              temp = P3;
+ 238   3                              switch(temp)
+ 239   3                              {
+ 240   4                                       case 0xeb:xuexiban_9();
+C51 COMPILER V8.06   MAIN                                                                  08/13/2017 09:52:37 PAGE 5   
+
+ 241   4                                              break;
+ 242   4                              }
+ 243   3                              while (temp != 0xf0)
+ 244   3                              {
+ 245   4                                      temp = P3;
+ 246   4                                      temp = temp & 0xf0;
+ 247   4                              }
+ 248   3                      }
+ 249   2              }       
+ 250   1       }
+ 251          
+ 252           void main()
+ 253           {
+ 254   1              while(1)
+ 255   1              {
+ 256   2                      Remote_control();       
+ 257   2              }       
+ 258   1       }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    599    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     12       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

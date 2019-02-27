@@ -1,0 +1,162 @@
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 15:54:10 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #
+   3          #define uchar unsigned char
+   4          #define uint unsigned int
+   5          sbit SDA = P2^0;
+   6          sbit SCL = P2^1;
+   7          uchar a;
+   8          
+   9          void delay()
+  10          { ; ; }
+  11          
+  12          void delay1(uint z)
+  13          {
+  14   1            uint x,y;
+  15   1            for(x=z;x>0;x--)
+  16   1                  for(y=112;y>0;y--);
+  17   1      }
+  18          
+  19          void start()      //起始信号
+  20          {
+  21   1            SDA = 1;
+  22   1            delay();
+  23   1            SCL = 1;
+  24   1            delay();
+  25   1            SDA = 0;
+  26   1            delay();
+  27   1      }
+  28          
+  29          void stop()      //终止信号
+  30          {
+  31   1            SDA = 0;
+  32   1            delay();
+  33   1            SCL = 1;
+  34   1            delay();
+  35   1            SDA = 1;
+  36   1            delay();
+  37   1      }
+  38          
+  39          void respons()    //应答
+  40          {
+  41   1            uchar i;
+  42   1            SCL = 1;
+  43   1            delay();
+  44   1            while((SDA == 1)&&(i < 250))   //SDA无应答就一直死循环，除非时间太长
+  45   1            {
+  46   2                  i++;
+  47   2            }
+  48   1            SCL = 0;
+  49   1            delay();
+  50   1      
+  51   1      
+  52   1      }
+  53          
+  54          void init()       //初始化
+  55          {
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 15:54:10 PAGE 2   
+
+  56   1            SDA = 1;
+  57   1            delay();
+  58   1            SCL = 1;
+  59   1            delay();
+  60   1      }
+  61          
+  62          void write_byte(uchar date)
+  63          {
+  64   1            uchar i,temp;
+  65   1            temp = date;
+  66   1            for(i=0;i<8;i++)
+  67   1            {
+  68   2                  temp = temp << 1;
+  69   2                  SCL = 0;
+  70   2                  delay();
+  71   2                  SDA = CY;
+  72   2                  delay();
+  73   2                  SCL = 1;
+  74   2                  delay();
+  75   2            }
+  76   1            SCL = 0;
+  77   1            delay();
+  78   1            SDA = 1;//释放总线信号，为了检验应答信号（SDA = 0）
+  79   1            delay();
+  80   1      }
+  81          
+  82          uchar read_byte()
+  83          {
+  84   1            uchar i,k;
+  85   1            SCL = 0;
+  86   1            delay();
+  87   1            SDA = 1;
+  88   1            delay();
+  89   1            for(i=0;i<8;i++)
+  90   1            {
+  91   2                  SCL = 1;
+  92   2                  delay();
+  93   2                  k = (k<<1)|SDA;
+  94   2                  SCL = 0;
+  95   2                  delay();
+  96   2            }
+  97   1            return k;
+  98   1      }
+  99          
+ 100          void write_add(uchar address,uchar date)
+ 101          {
+ 102   1            start();
+ 103   1            write_byte(0xa0);  //起始地址
+ 104   1            respons();
+ 105   1            write_byte(address);   //要传数据的地址
+ 106   1            respons();
+ 107   1            write_byte(date);   //要传的数据
+ 108   1            respons();
+ 109   1            stop();
+ 110   1      }
+ 111          
+ 112          uchar read_add(uchar address)
+ 113          {
+ 114   1            uchar date;
+ 115   1            start();
+ 116   1            write_byte(0xa0);
+ 117   1            respons();
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 15:54:10 PAGE 3   
+
+ 118   1            write_byte(address);   
+ 119   1            respons();
+ 120   1            start();
+ 121   1            write_byte(0xa1);   //器件地址
+ 122   1            respons();
+ 123   1            date = read_byte();
+ 124   1            stop();
+ 125   1            return date;
+ 126   1      }
+ 127          
+ 128          void main()
+ 129          {
+ 130   1            init();
+ 131   1            write_add(23,0xaa);
+ 132   1            delay1(100);
+ 133   1            P1 = read_add(23);      //让数码管亮
+ 134   1            while(1);
+ 135   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    246    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

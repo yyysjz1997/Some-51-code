@@ -1,0 +1,537 @@
+C51 COMPILER V8.06   MAIN                                                                  08/14/2017 02:12:52 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include<reg52.h>
+   2          #define uint unsigned int
+   3          #define uchar unsigned char
+   4          uchar a,miao,shi,fen,ri,yue,nian,week,flag,temp,key1n;
+   5          #define yh 0x80  //第一行的初始位置
+   6          #define er 0x80+0x40 //第二行初始位置
+   7          //sbit cs1=P3^7;
+   8          //sbit ledk=P2^5;
+   9          sbit dula=P2^6;
+  10          sbit wela=P2^7;
+  11          sbit wr=P1^1;
+  12          sbit rs=P1^0;
+  13          sbit en=P2^5;
+  14          sbit SCLK=P2^1;  // 6  P1.1
+  15          sbit IO=P2^0;    // 7  P1.0
+  16          sbit RST=P2^4;   //时钟 5  P1.2
+  17          sbit ACC0=ACC^0;
+  18          sbit ACC7=ACC^7;
+  19          sbit key=P3^7;
+  20          sbit key1=P3^0;
+  21          sbit key2=P3^1;
+  22          sbit key3=P3^2;
+  23          sbit FM = P2^3;
+  24          uchar code tab1[]={"2005-12-31 SUN"};
+  25          uchar code tab2[]={"23:59:56"};
+  26          void delay(uint xms)//延时函数
+  27          {
+  28   1              uint x,y;
+  29   1              for(x=xms;x>0;x--)
+  30   1               for(y=110;y>0;y--);
+  31   1      }
+  32          /******************液晶写入************************/
+  33          write_1602com(uchar com)//液晶写入指令函数
+  34          {
+  35   1              rs=0;//置为写入命令
+  36   1              P0=com;//送入数据
+  37   1              delay(1);
+  38   1              en=1;//拉高使能端
+  39   1              delay(1);
+  40   1              en=0;//完成高脉冲
+  41   1      }
+  42          write_1602dat(uchar dat)
+  43          {
+  44   1              rs=1;//置为写入数据
+  45   1              P0=dat;//送入数据
+  46   1              delay(1);
+  47   1              en=1;
+  48   1              delay(1);
+  49   1              en=0;
+  50   1      }
+  51          
+  52          void write_sfm(uchar add,uchar dat)//写时分秒
+  53          {
+  54   1              uchar gw,sw;
+  55   1              gw=dat%10;
+C51 COMPILER V8.06   MAIN                                                                  08/14/2017 02:12:52 PAGE 2   
+
+  56   1              sw=dat/10;
+  57   1              write_1602com(er+add);
+  58   1              write_1602dat(0x30+sw);
+  59   1              write_1602dat(0x30+gw);
+  60   1      }
+  61          void write_nyr(uchar add,uchar dat)
+  62          {
+  63   1              uchar gw,sw;
+  64   1              gw=dat%10;
+  65   1              sw=dat/10;
+  66   1              write_1602com(yh+add);
+  67   1              write_1602dat(0x30+sw);
+  68   1              write_1602dat(0x30+gw);
+  69   1      
+  70   1      
+  71   1      }
+  72          void write_week(uchar week)//写星期函数
+  73          {
+  74   1              write_1602com(yh+0x0d);
+  75   1              switch(week)
+  76   1              {
+  77   2                      case 1:write_1602dat('M');//delay(5);
+  78   2                                 write_1602dat('O');//delay(5);
+  79   2                                 write_1602dat('N');
+  80   2                                 break;
+  81   2      
+  82   2                      case 2:write_1602dat('T');//delay(5);
+  83   2                                 write_1602dat('U');//delay(5);
+  84   2                                 write_1602dat('E');
+  85   2                                 break;
+  86   2      
+  87   2                      case 3:write_1602dat('W');//delay(5);
+  88   2                                 write_1602dat('E');//delay(5);
+  89   2                                 write_1602dat('D');
+  90   2                                 break;
+  91   2      
+  92   2                      case 4:write_1602dat('T');//delay(5);
+  93   2                                 write_1602dat('H');//delay(5);
+  94   2                                 write_1602dat('U');
+  95   2                                 break;
+  96   2      
+  97   2                      case 5:write_1602dat('F');//delay(5);
+  98   2                                 write_1602dat('R');//delay(5);
+  99   2                                 write_1602dat('I');
+ 100   2                                 break;
+ 101   2      
+ 102   2                      case 6:write_1602dat('S');//delay(5);
+ 103   2                                 write_1602dat('T');//delay(5);
+ 104   2                                 write_1602dat('A');
+ 105   2                                 break;
+ 106   2      
+ 107   2                      case 7:write_1602dat('S');//delay(5);
+ 108   2                                 write_1602dat('U');//delay(5);
+ 109   2                                 write_1602dat('N');
+ 110   2                                 break;
+ 111   2      
+ 112   2      
+ 113   2      }
+ 114   1      
+ 115   1      
+ 116   1      
+ 117   1      }
+C51 COMPILER V8.06   MAIN                                                                  08/14/2017 02:12:52 PAGE 3   
+
+ 118          lcd_init()//液晶初始化函数
+ 119          {       wr=0;
+ 120   1              write_1602com(0x38);//设置液晶工作模式
+ 121   1              write_1602com(0x0c);//开显示不显示光标
+ 122   1              write_1602com(0x06);//整屏不移动，指针加一
+ 123   1              write_1602com(0x01);
+ 124   1              write_1602com(yh+2);//字符写入的位置
+ 125   1              for(a=0;a<14;a++)
+ 126   1              {
+ 127   2              write_1602dat(tab1[a]);
+ 128   2              //delay(3);
+ 129   2              }
+ 130   1              write_1602com(er+4);
+ 131   1              for(a=0;a<8;a++)
+ 132   1              {
+ 133   2              write_1602dat(tab2[a]);
+ 134   2              //delay(3);
+ 135   2              }
+ 136   1      
+ 137   1      }
+ 138          /*********************over***********************/
+ 139          /********************ds1302****************************/
+ 140          void write_byte(uchar dat)
+ 141          {
+ 142   1              ACC=dat;
+ 143   1              RST=1;
+ 144   1              for(a=8;a>0;a--)
+ 145   1              {
+ 146   2                      IO=ACC0;
+ 147   2                      SCLK=0;
+ 148   2                      SCLK=1;
+ 149   2                      ACC=ACC>>1;
+ 150   2              }
+ 151   1      }
+ 152          uchar read_byte()
+ 153          {
+ 154   1              RST=1;
+ 155   1              for(a=8;a>0;a--)
+ 156   1              {
+ 157   2                      ACC7=IO;
+ 158   2                      SCLK=1;
+ 159   2                      SCLK=0;
+ 160   2                      ACC=ACC>>1;
+ 161   2      
+ 162   2              }
+ 163   1              return (ACC);
+ 164   1      }
+ 165          void write_1302(uchar add,uchar dat)
+ 166          {
+ 167   1      
+ 168   1              RST=0;
+ 169   1              SCLK=0;
+ 170   1              RST=1;
+ 171   1              write_byte(add);
+ 172   1              write_byte(dat);
+ 173   1              SCLK=1;
+ 174   1              RST=0;
+ 175   1      }
+ 176          uchar read_1302(uchar add)
+ 177          {
+ 178   1              uchar temp;
+ 179   1              RST=0;
+C51 COMPILER V8.06   MAIN                                                                  08/14/2017 02:12:52 PAGE 4   
+
+ 180   1              SCLK=0;
+ 181   1              RST=1;
+ 182   1              write_byte(add);
+ 183   1              temp=read_byte();
+ 184   1              SCLK=1;
+ 185   1              RST=0;
+ 186   1              return(temp);
+ 187   1      }
+ 188          uchar BCD_Decimal(uchar bcd)   //BCD码转化为十位数
+ 189          {
+ 190   1       uchar Decimal;
+ 191   1       Decimal=bcd>>4;
+ 192   1       return(Decimal=Decimal*10+(bcd&=0x0F));
+ 193   1      }
+ 194          void ds1302_init()
+ 195          {
+ 196   1              RST=0;
+ 197   1              SCLK=0;
+ 198   1              write_1302(0x80,miao|0x00);//允许写
+ 199   1              write_1302(0x8e,0x00);
+ 200   1      
+ 201   1              miao= (tab2[6]-0x30)*10+(tab2[7]-0x30);
+ 202   1              temp=(miao)/10*16+(miao)%10;
+ 203   1              write_1302(0x80,0x00|temp);
+ 204   1      
+ 205   1              fen= (tab2[3]-0x30)*10+(tab2[4]-0x30);
+ 206   1              temp=(fen)/10*16+(fen)%10;
+ 207   1              write_1302(0x82,0x00|temp);
+ 208   1      
+ 209   1              shi= (tab2[0]-0x30)*10+(tab2[1]-0x30);
+ 210   1              temp=(shi)/10*16+(shi)%10;
+ 211   1              write_1302(0x84,0x00|temp);
+ 212   1      
+ 213   1              ri= (tab1[8]-0x30)*10+(tab1[9]-0x30);
+ 214   1              temp=(ri)/10*16+(ri)%10;
+ 215   1              write_1302(0x86,0x00|temp);
+ 216   1      
+ 217   1              yue= (tab1[5]-0x30)*10+(tab1[6]-0x30);
+ 218   1              temp=(yue)/10*16+(yue)%10;
+ 219   1              write_1302(0x88,0x00|temp);
+ 220   1      
+ 221   1              write_1302(0x8e,0x80);  //写完数据后关闭，为了保护
+ 222   1      }
+ 223          
+ 224          void keyscan()
+ 225          {
+ 226   1         key=0;
+ 227   1              if(key1==0)//key1为功能键
+ 228   1              {
+ 229   2              delay(5);
+ 230   2              if(key1==0)
+ 231   2              {
+ 232   3              while(!key1);
+ 233   3              key1n++;
+ 234   3              if(key1n==9)
+ 235   3                      key1n=1;
+ 236   3              switch(key1n)
+ 237   3              {
+ 238   4      
+ 239   4              case 1: TR0=0;//关闭定时器
+ 240   4                              //TR1=0;
+ 241   4                              write_1602com(er+0x0b);//写入光标位置
+C51 COMPILER V8.06   MAIN                                                                  08/14/2017 02:12:52 PAGE 5   
+
+ 242   4                              write_1602com(0x0f);//设置光标为闪烁
+ 243   4                              temp=(miao)/10*16+(miao)%10;
+ 244   4                              write_1302(0x8e,0x00);
+ 245   4                              write_1302(0x80,0x80|temp);//miao
+ 246   4                              write_1302(0x8e,0x80);
+ 247   4                              break;
+ 248   4              case 2:  write_1602com(er+8);//fen
+ 249   4      
+ 250   4                           //write_1602com(0x0f);
+ 251   4                              break;
+ 252   4              case 3: write_1602com(er+5);//shi
+ 253   4                           //write_1602com(0x0f);
+ 254   4                              break;
+ 255   4              case 4: write_1602com(yh+0x0f);//week
+ 256   4                           //write_1602com(0x0f);
+ 257   4                              break;
+ 258   4              case 5: write_1602com(yh+0x0b);//ri
+ 259   4                           //write_1602com(0x0f);
+ 260   4                              break;
+ 261   4              case 6: write_1602com(yh+0x08);//yue
+ 262   4                           //write_1602com(0x0f);
+ 263   4                              break;
+ 264   4              case 7: write_1602com(yh+0x05);//nian
+ 265   4                           //write_1602com(0x0f);
+ 266   4                              break;
+ 267   4              case 8:
+ 268   4                              write_1602com(0x0c);//设置光标不闪烁
+ 269   4                              TR0=1;//打开定时器
+ 270   4                              temp=(miao)/10*16+(miao)%10;
+ 271   4                              write_1302(0x8e,0x00);
+ 272   4                              write_1302(0x80,0x00|temp);//miao
+ 273   4                              write_1302(0x8e,0x80);
+ 274   4                  break;
+ 275   4              }
+ 276   3              }
+ 277   2              }
+ 278   1              if(key1n!=0)//当key1按下以下。再按以下键才有效
+ 279   1              {
+ 280   2      
+ 281   2              if(key2==0)  //上调键
+ 282   2              {
+ 283   3              delay(5);
+ 284   3              if(key2==0)
+ 285   3              {
+ 286   4              while(!key2);
+ 287   4              switch(key1n)
+ 288   4              {
+ 289   5              case 1:miao++;
+ 290   5                              if(miao==60)
+ 291   5                                      miao=0;
+ 292   5                              write_sfm(0x0a,miao);//写入新的秒数
+ 293   5                              temp=(miao)/10*16+(miao)%10;
+ 294   5                              write_1302(0x8e,0x00);
+ 295   5                              write_1302(0x80,0x80|temp);
+ 296   5                              write_1302(0x8e,0x80);
+ 297   5                              write_1602com(er+0x0b);//因为设置液晶的模式是写入数据后，指针自动加一，在这里是写回原来的位置
+ 298   5                              //write_1602com(0x0b);
+ 299   5                              break;
+ 300   5              case 2:fen++;
+ 301   5                              if(fen==60)
+ 302   5                                      fen=0;
+ 303   5                              write_sfm(0x07,fen);
+C51 COMPILER V8.06   MAIN                                                                  08/14/2017 02:12:52 PAGE 6   
+
+ 304   5                              temp=(fen)/10*16+(fen)%10;
+ 305   5                              write_1302(0x8e,0x00);
+ 306   5                              write_1302(0x82,temp);
+ 307   5                              write_1302(0x8e,0x80);
+ 308   5                              write_1602com(er+8);
+ 309   5                              break;
+ 310   5              case 3:shi++;
+ 311   5                              if(shi==24)
+ 312   5                                      shi=0;
+ 313   5                              write_sfm(4,shi);
+ 314   5                              temp=(shi)/10*16+(shi)%10;
+ 315   5                              write_1302(0x8e,0x00);
+ 316   5                              write_1302(0x84,temp);
+ 317   5                              write_1302(0x8e,0x80);
+ 318   5                              write_1602com(er+5);
+ 319   5                              break;
+ 320   5              case 4:week++;
+ 321   5                              if(week==8)
+ 322   5                                      week=0;
+ 323   5                                      write_week(week);
+ 324   5      
+ 325   5                              write_1602com(yh+0x0f);
+ 326   5                              break;
+ 327   5              case 5:ri++;
+ 328   5                              if(ri==31)
+ 329   5                                      ri=0;
+ 330   5                              write_nyr(10,ri);
+ 331   5                              temp=(ri)/10*16+(ri)%10;
+ 332   5                              write_1302(0x8e,0x00);  //关闭
+ 333   5                              write_1302(0x86,temp);
+ 334   5                              write_1302(0x8e,0x80);  //开启
+ 335   5                              write_1602com(yh+11);
+ 336   5                              break;
+ 337   5              case 6:yue++;
+ 338   5                              if(yue==13)
+ 339   5                                      yue=0;
+ 340   5                              write_nyr(7,yue);
+ 341   5                              temp=(yue)/10*16+(yue)%10;
+ 342   5                              write_1302(0x8e,0x00);
+ 343   5                              write_1302(0x88,temp);
+ 344   5                              write_1302(0x8e,0x80);
+ 345   5                              write_1602com(yh+8);
+ 346   5                              break;
+ 347   5              case 7:nian++;
+ 348   5                       if(nian==100)
+ 349   5                              nian=0;
+ 350   5                              write_nyr(4,nian);
+ 351   5                              write_1602com(yh+5);
+ 352   5                              break;
+ 353   5      
+ 354   5      
+ 355   5              }
+ 356   4      
+ 357   4              }
+ 358   3      
+ 359   3              }
+ 360   2              if(key3==0)
+ 361   2              {
+ 362   3              delay(5);
+ 363   3              if(key3==0)
+ 364   3              {
+ 365   4              while(!key3);
+C51 COMPILER V8.06   MAIN                                                                  08/14/2017 02:12:52 PAGE 7   
+
+ 366   4              switch(key1n)
+ 367   4              {
+ 368   5                      case 1:miao--;
+ 369   5                                      if(miao==-1)
+ 370   5                                              miao=59;
+ 371   5                              write_sfm(0x0a,miao);//写入新的秒数
+ 372   5                              write_1602com(er+0x0b);//因为设置液晶的模式是写入数据后，指针自动加一，在这里是写回原来的位置
+ 373   5                              //write_1602com(0x0b);
+ 374   5                              break;
+ 375   5                      case 2:fen--;
+ 376   5                                      if(fen==-1)
+ 377   5                                              fen=59;
+ 378   5                              write_sfm(7,fen);
+ 379   5                              temp=(fen)/10*16+(fen)%10;
+ 380   5                              write_1302(0x8e,0x00);
+ 381   5                              write_1302(0x82,temp);
+ 382   5                              write_1302(0x8e,0x80);
+ 383   5                              write_1602com(er+8);
+ 384   5                              break;
+ 385   5      
+ 386   5                      case 3:shi--;
+ 387   5                                 if(shi==-1)
+ 388   5                                              shi=23;
+ 389   5                              write_sfm(4,shi);
+ 390   5                              temp=(shi)/10*16+(shi)%10;
+ 391   5                              write_1302(0x8e,0x00);
+ 392   5                              write_1302(0x84,temp);
+ 393   5                              write_1302(0x8e,0x80);
+ 394   5                              write_1602com(er+5);
+ 395   5                              break;
+ 396   5                      case 4:week--;
+ 397   5                                      if(week==-1)
+ 398   5                                              week=7;
+ 399   5                              write_week(week);
+ 400   5                              write_1602com(yh+0x0f);
+ 401   5                              break;
+ 402   5                      case 5:ri--;
+ 403   5                                      if(ri==-1)
+ 404   5                                              ri=30;
+ 405   5                              write_nyr(10,ri);
+ 406   5                              temp=(ri)/10*16+(ri)%10;
+ 407   5                              write_1302(0x8e,0x00);
+ 408   5                              write_1302(0x86,temp);
+ 409   5                              write_1302(0x8e,0x80);
+ 410   5                              write_1602com(yh+11);
+ 411   5                              break;
+ 412   5                      case 6:yue--;
+ 413   5                                      if(yue==-1)
+ 414   5                                              yue=12;
+ 415   5                              write_nyr(7,yue);
+ 416   5                              temp=(yue)/10*16+(yue)%10;
+ 417   5                              write_1302(0x8e,0x00);
+ 418   5                              write_1302(0x88,temp);
+ 419   5                              write_1302(0x8e,0x80);
+ 420   5                              write_1602com(yh+8);
+ 421   5                              break;
+ 422   5                      case 7:nian--;
+ 423   5                       if(nian==-1)
+ 424   5                              nian=99;
+ 425   5                              write_nyr(4,nian);
+ 426   5                              write_1602com(yh+5);
+ 427   5                              break;
+C51 COMPILER V8.06   MAIN                                                                  08/14/2017 02:12:52 PAGE 8   
+
+ 428   5      
+ 429   5      
+ 430   5              }
+ 431   4      
+ 432   4              }
+ 433   3      
+ 434   3              }
+ 435   2      
+ 436   2              }
+ 437   1      
+ 438   1      
+ 439   1      
+ 440   1      }
+ 441          void init()
+ 442          {
+ 443   1              TMOD=0x11;
+ 444   1              TH0=0;
+ 445   1              TL0=0;
+ 446   1              EA=1;
+ 447   1              ET0=1;
+ 448   1              TR0=1;
+ 449   1      
+ 450   1      
+ 451   1      
+ 452   1      }
+ 453          
+ 454          void cmg(void)//数码管锁存函数
+ 455          {
+ 456   1      dula=1;
+ 457   1      P0=0x00;
+ 458   1      dula=0;
+ 459   1      wela=1;
+ 460   1      P0=0x00;
+ 461   1      wela=0;
+ 462   1      }
+ 463          void main()
+ 464          {
+ 465   1      
+ 466   1         cmg();//数码管锁存
+ 467   1              lcd_init();
+ 468   1              ds1302_init();
+ 469   1              init();
+ 470   1              while(1)
+ 471   1              {
+ 472   2                      keyscan();
+ 473   2          }
+ 474   1      }
+ 475          void timer0() interrupt 1    //和数码管显示的DS1302_GetTime（）的函数相同
+ 476          {
+ 477   1              miao = BCD_Decimal(read_1302(0x81));
+ 478   1              fen = BCD_Decimal(read_1302(0x83));
+ 479   1              shi  = BCD_Decimal(read_1302(0x85));
+ 480   1              ri  = BCD_Decimal(read_1302(0x87));
+ 481   1              yue = BCD_Decimal(read_1302(0x89));
+ 482   1              nian=BCD_Decimal(read_1302(0x8d));
+ 483   1              week=BCD_Decimal(read_1302(0x8b));
+ 484   1              write_sfm(10,miao);
+ 485   1              write_sfm(7,fen);
+ 486   1              write_sfm(4,shi);
+ 487   1              write_nyr(10,ri);
+ 488   1              write_week(week);
+ 489   1          write_nyr(7,yue);
+C51 COMPILER V8.06   MAIN                                                                  08/14/2017 02:12:52 PAGE 9   
+
+ 490   1              write_nyr(4,nian);
+ 491   1              if((fen == 0) && (miao == 0))
+ 492   1              {
+ 493   2                       FM = 0;
+ 494   2                   delay(100);
+ 495   2                   FM = 1;
+ 496   2              }
+ 497   1      }
+ 498          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1764    ----
+   CONSTANT SIZE    =     24    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     11    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

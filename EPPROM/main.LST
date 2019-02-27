@@ -1,0 +1,224 @@
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 09:57:35 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          //开机秒数记忆
+   2          #include<reg52.h>
+   3          #define uchar unsigned char
+   4          #define uint unsigned int
+   5          bit  write=0;           //写24C02的标志；
+   6          sbit sda=P2^0;                         
+   7          sbit scl=P2^1;
+   8          sbit dula=P2^6;
+   9          sbit wela=P2^7;
+  10          sbit RST=P2^5;   //时钟  不需要，可以关掉
+  11          sbit CS_DA =P2^4 ;  //HJ-3G DAC HL-1不需要，可以关掉
+  12          sbit JD=P0^6;
+  13          sbit FM=P2^3;
+  14          
+  15          
+  16          uchar sec,tcnt; 
+  17          uchar code table[]={
+  18          0x3f,0x06,0x5b,0x4f,
+  19          0x66,0x6d,0x7d,0x07,
+  20          0x7f,0x6f,0x77,0x7c,
+  21          0x39,0x5e,0x79,0x71};
+  22          void ioin()  //IO口继电器、数码管锁存函数
+  23             {      
+  24   1                wela=1;
+  25   1           P0 = 1;  
+  26   1                JD = 0;    
+  27   1           wela=0;
+  28   1                dula=1;
+  29   1                P0=0;
+  30   1                dula=0;
+  31   1          }
+  32          void delay()
+  33          { ;; }
+  34          void delay1ms(uint z)
+  35          {
+  36   1              uint x,y;
+  37   1              for(x=z;x>0;x--)
+  38   1                      for(y=110;y>0;y--);
+  39   1      }
+  40          void start()  //开始信号
+  41          {       
+  42   1              sda=1;
+  43   1              delay();
+  44   1              scl=1;
+  45   1              delay();
+  46   1              sda=0;
+  47   1              delay();
+  48   1      }
+  49          void stop()   //停止
+  50          {
+  51   1              sda=0;
+  52   1              delay();
+  53   1              scl=1;
+  54   1              delay();
+  55   1              sda=1;
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 09:57:35 PAGE 2   
+
+  56   1              delay();
+  57   1      }
+  58          void respons()  //应答
+  59          {
+  60   1              uchar i;
+  61   1              scl=1;
+  62   1              delay();
+  63   1              while((sda==1)&&(i<250))i++;
+  64   1              scl=0;
+  65   1              delay();
+  66   1      }
+  67          void init()
+  68          {
+  69   1         RST=0; //总线时钟低电评
+  70   1         CS_DA =0 ;
+  71   1              sda=1;
+  72   1              delay();
+  73   1              scl=1;
+  74   1              delay();
+  75   1      }
+  76          void write_byte(uchar date)
+  77          {
+  78   1              uchar i,temp;
+  79   1              temp=date;
+  80   1              for(i=0;i<8;i++)
+  81   1              {
+  82   2                      temp=temp<<1;
+  83   2                      scl=0;
+  84   2                  delay();
+  85   2                      sda=CY;
+  86   2                      delay();
+  87   2                      scl=1;
+  88   2                      delay();
+  89   2              }
+  90   1              scl=0;
+  91   1              delay();
+  92   1              sda=1;
+  93   1              delay();
+  94   1      }
+  95          uchar read_byte()
+  96          {
+  97   1              uchar i,k;
+  98   1              scl=0;
+  99   1              delay();
+ 100   1              sda=1;
+ 101   1              delay();
+ 102   1              for(i=0;i<8;i++)
+ 103   1              {
+ 104   2                      scl=1;
+ 105   2                      delay();        
+ 106   2                      k=(k<<1)|sda;
+ 107   2                      scl=0;
+ 108   2                      delay();        
+ 109   2              }
+ 110   1              return k;
+ 111   1      }
+ 112          void write_add(uchar address,uchar date)
+ 113          {
+ 114   1              start();
+ 115   1              write_byte(0xa0);
+ 116   1              respons();
+ 117   1              write_byte(address);
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 09:57:35 PAGE 3   
+
+ 118   1              respons();
+ 119   1              write_byte(date);
+ 120   1              respons();
+ 121   1              stop();
+ 122   1      }
+ 123          uchar read_add(uchar address)
+ 124          {
+ 125   1              uchar date;
+ 126   1              start();
+ 127   1              write_byte(0xa0);
+ 128   1              respons();
+ 129   1              write_byte(address);
+ 130   1              respons();
+ 131   1              start();
+ 132   1              write_byte(0xa1);
+ 133   1              respons();
+ 134   1              date=read_byte();
+ 135   1              stop();
+ 136   1              return date;
+ 137   1      }
+ 138          void display(uchar bai_c,uchar sh_c)    //显示程序
+ 139          {
+ 140   1         dula=0;
+ 141   1         P0=table[bai_c];             //显示第一位
+ 142   1         dula=1;
+ 143   1         dula=0;
+ 144   1         wela=0;
+ 145   1         P0=0xfe;
+ 146   1         wela=1;
+ 147   1         wela=0;
+ 148   1         delay1ms(5);
+ 149   1         dula=0;
+ 150   1         P0=table[sh_c];              //显示第二位
+ 151   1         dula=1;
+ 152   1         dula=0;
+ 153   1         wela=0;
+ 154   1         P0=0xfd;
+ 155   1         wela=1;
+ 156   1         wela=0;
+ 157   1         delay1ms(5);
+ 158   1      }
+ 159          void main()
+ 160          {
+ 161   1         ioin();
+ 162   1              init();
+ 163   1              sec=read_add(1);    //读出保存的数据赋于sec
+ 164   1              if(sec>100)        //防止首次读取出错误数据
+ 165   1                      sec=0;
+ 166   1              TMOD=0x01;                      //定时器工作在方式1
+ 167   1              ET0=1; 
+ 168   1              EA=1;
+ 169   1              TH0=(65536-50000)/256; //对TH0 TL0赋值
+ 170   1              TL0=(65536-50000)%256; //使定时器0.05秒中断一次
+ 171   1              TR0=1;                 //开始计时
+ 172   1              while(1)
+ 173   1              {
+ 174   2                      display(sec/10,sec%10);
+ 175   2                      if(write==1)                  //判断计时器是否计时一秒
+ 176   2                      {
+ 177   3                              write=0;              //清零
+ 178   3                              write_add(1,sec);         //在24c02的地址2中写入数据sec
+ 179   3                      }
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 09:57:35 PAGE 4   
+
+ 180   2              } 
+ 181   1      }
+ 182          void t0() interrupt 1 //定时中断服务函数
+ 183          {
+ 184   1              TH0=(65536-50000)/256; //对TH0 TL0赋值
+ 185   1              TL0=(65536-50000)%256; //重装计数初值
+ 186   1              tcnt++;        //每过50ms tcnt加一
+ 187   1              if(tcnt==5)  //计满20次（1秒）时
+ 188   1              {
+ 189   2                  tcnt=0;   //重新再计
+ 190   2                  sec++;
+ 191   2                  write=1;  //1秒写一次24C02
+ 192   2                  if(sec==100) //定时100秒，再从零开始计时
+ 193   2                      sec=0;
+ 194   2              }
+ 195   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    405    ----
+   CONSTANT SIZE    =     16    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

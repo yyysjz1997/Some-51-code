@@ -1,0 +1,59 @@
+C51 COMPILER V8.06   MAIN                                                                  08/09/2017 10:10:33 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #define uchar unsigned char
+   3          #define uint unsigned int
+   4          sbit SCL = P2^1;
+   5          sbit SDA = P2^0;
+   6          
+   7          void delay(uint z);
+   8          
+   9          void main()
+  10          {
+  11   1              //P0 = 0;
+  12   1              while(1)
+  13   1              {
+  14   2                      SDA = 1;
+  15   2                      SCL = 1;
+  16   2                      delay(5);
+  17   2                      SDA = 0;
+  18   2                      delay(5);
+  19   2                      SCL = 0; 
+  20   2      
+  21   2                      delay(10);
+  22   2      
+  23   2                      SCL = 1;
+  24   2                      delay(5);
+  25   2                      SDA = 1;
+  26   2      
+  27   2              }
+  28   1      }
+  29          
+  30          void delay(uint z)
+  31          {
+  32   1              uint x,y;
+  33   1              for(x=z;x>0;x--)
+  34   1                      for(y=112;y>0;y--);
+  35   1      }
+  36          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     62    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

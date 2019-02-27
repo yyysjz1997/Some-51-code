@@ -1,0 +1,61 @@
+C51 COMPILER V8.06   MAIN                                                                  08/16/2017 09:37:03 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #define uchar unsigned char
+   3          #define uint unsigned int
+   4          sbit LED1 = P1^0;
+   5          sbit LED2 = P1^1;
+   6          sbit K1 = P3^7;
+   7          sbit K2 = P3^6;
+   8          
+   9          void delay(unsigned int xms)
+  10          {
+  11   1              unsigned int i,j;
+  12   1              for(i=xms;i>0;i--)
+  13   1                      for(j=112;j>0;j--);
+  14   1      }
+  15          
+  16          void main()
+  17          {
+  18   1              EA = 1;
+  19   1              EX0 = 1;
+  20   1              EX1 = 1;
+  21   1              
+  22   1              IT0 = 0;
+  23   1              IT1 = 0;        
+  24   1              
+  25   1              LED1 = 1;
+  26   1              LED2 = 1;       
+  27   1      }
+  28          
+  29          void in()interrupt 0
+  30          {
+  31   1              LED1 = 0;
+  32   1      }
+  33          
+  34          void in2()interrupt 2
+  35          {
+  36   1              LED2 = 0;
+  37   1      }
+  38          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     51    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

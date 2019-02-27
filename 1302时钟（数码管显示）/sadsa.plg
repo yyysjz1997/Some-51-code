@@ -1,0 +1,17 @@
+<html>
+<body>
+<pre>
+<h1>礦ision3 Build Log</h1>
+<h2>Project:</h2>
+C:\Users\yyy\Desktop\学习\51自己程序\1302时钟（数码管显示）\sadsa.uv2
+Project File Date:  08/13/2017
+
+<h2>Output:</h2>
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DATETOSTR?MAIN
+Program Size: data=45.1 xdata=0 code=943
+创建 HEX 文件 "sadsa" ...
+"sadsa" - 0 个错误, 1 个警告。

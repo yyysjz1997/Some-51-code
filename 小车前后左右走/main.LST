@@ -1,0 +1,103 @@
+C51 COMPILER V8.06   MAIN                                                                  08/15/2017 17:49:24 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include<reg52.h> 
+   2          
+   3          sbit IN1=P1^2; // 高电平1 后退（反转）
+   4          sbit IN2=P1^3; // 高电平1 前进（正转）
+   5          sbit IN3=P1^6; // 高电平1 前进（正转）  
+   6          sbit IN4=P1^7; // 高电平1 后退（反转）
+   7          sbit EN1=P1^4; // 高电平使能 
+   8          sbit EN2=P1^5; // 高电平使能 
+   9          
+  10          void run(void)                    //前进函数
+  11          {
+  12   1              EN1=1;
+  13   1              EN2=1;//电机使能
+  14   1          IN1=0;
+  15   1              IN2=1; //左电机的正转
+  16   1              IN3=1;
+  17   1              IN4=0;//右电机的正转
+  18   1      }
+  19          
+  20          void back(void)                   //后退函数
+  21          {
+  22   1              EN1=1;
+  23   1              EN2=1;//电机使能
+  24   1          IN1=1;
+  25   1              IN2=0; //左电机的反转
+  26   1              IN3=0;
+  27   1              IN4=1;//右电机的反转
+  28   1      }
+  29          
+  30          void right(void)                 //右转函数
+  31          {
+  32   1              EN1=1;
+  33   1              EN2=1;//电机使能
+  34   1          IN1=0;
+  35   1              IN2=1; //左电机的正转
+  36   1              IN3=0;
+  37   1              IN4=0;//右电机不动
+  38   1      }
+  39          
+  40          void left(void)                   //左转函数
+  41          {
+  42   1              EN1=1;
+  43   1              EN2=1;//电机使能
+  44   1          IN1=0;
+  45   1              IN2=0; //左电机不动
+  46   1              IN3=1;
+  47   1              IN4=0;//右电机正转
+  48   1      }
+  49          
+  50          void stop(void)                   //停止函数
+  51          {
+  52   1              EN1=1;
+  53   1              EN2=1;//电机使能
+  54   1          IN1=0;
+  55   1              IN2=0; //左电机不动
+C51 COMPILER V8.06   MAIN                                                                  08/15/2017 17:49:24 PAGE 2   
+
+  56   1              IN3=0;
+  57   1              IN4=0;//右电机正转
+  58   1      }
+  59          
+  60          void main()
+  61          {
+  62   1        while(1)
+  63   1        {
+  64   2                      right();
+  65   2        }
+  66   1      }
+  67          
+  68          
+  69          
+  70          
+  71          
+  72          
+  73          
+  74          
+  75          
+  76          
+  77          
+  78          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     70    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

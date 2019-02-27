@@ -1,0 +1,3 @@
+"main.obj" 
+TO "rte" 
+RAMSIZE(256) 

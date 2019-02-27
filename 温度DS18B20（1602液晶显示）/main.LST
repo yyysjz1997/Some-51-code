@@ -1,0 +1,329 @@
+C51 COMPILER V8.06   MAIN                                                                  08/12/2017 17:40:58 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #include <intrins.h>
+   3          #include <math.h>
+   4          #define uchar unsigned char
+   5          #define uint unsigned int
+   6          sbit DS = P2^2;      //总线     //define interface
+   7          sbit RS = P1^0;   //定义端口
+   8          sbit RW = P1^1;
+   9          sbit EN = P2^5;
+  10          sbit DU = P2^6;
+  11          sbit WE = P2^7;
+  12          uint temp;             // variable of temperature
+  13          //uchar flag1;            // sign of the result positive or negative
+  14          
+  15          void delay(uint count)      //delay
+  16          {
+  17   1        uint i;
+  18   1        while(count)
+  19   1        {
+  20   2          i=200;
+  21   2          while(i>0)
+  22   2          i--;
+  23   2          count--;
+  24   2        }
+  25   1      }
+  26          
+  27          
+  28          void dsreset(void)       //send reset and initialization command
+  29          {
+  30   1        uint i;
+  31   1        DS=0;
+  32   1        i=103;                                   //将总线拉低480us~960us
+  33   1        while(i>0)i--;
+  34   1        DS=1;                                    //然后拉高总线，若DS18B20做出反应会将在15us~60us后将总线拉低
+  35   1        i=4;                                     //15us~60us等待
+  36   1        while(i>0)i--;
+  37   1        //while(DS);
+  38   1      }
+  39          
+  40          bit tmpreadbit(void)       //read a bit
+  41          {
+  42   1         uint i;
+  43   1         bit dat;
+  44   1         DS=0;i++;          //i++ for delay
+  45   1         DS=1;i++;i++;
+  46   1         dat=DS;
+  47   1         i=8;while(i>0)i--;
+  48   1         return (dat);
+  49   1      }
+  50          
+  51          uchar tmpread(void)   //read a byte date
+  52          {
+  53   1        uchar i,j,dat;
+  54   1        dat=0;
+  55   1        for(i=1;i<=8;i++)
+C51 COMPILER V8.06   MAIN                                                                  08/12/2017 17:40:58 PAGE 2   
+
+  56   1        {
+  57   2          j=tmpreadbit();
+  58   2          dat=(j<<7)|(dat>>1);   //读出的数据最低位在最前面，这样刚好一个字节在DAT里
+  59   2        }
+  60   1        return(dat);
+  61   1      }
+  62          
+  63          void tmpwritebyte(uchar dat)   //write a byte to ds18b20
+  64          {
+  65   1        uint i;
+  66   1        uchar j;
+  67   1        bit testb;
+  68   1        for(j=1;j<=8;j++)      //一个字节8位数据，每次只能写一个位
+  69   1        {
+  70   2          testb=dat&0x01;  //依次将dat的每一位赋值给testb
+  71   2          dat=dat>>1;
+  72   2          if(testb)     //write 1
+  73   2          {
+  74   3            DS=0;
+  75   3            i++;i++;  //大于1us
+  76   3            DS=1;
+  77   3            i=8;while(i>0)i--;  //至少60us
+  78   3          }
+  79   2          else
+  80   2          {
+  81   3            DS=0;       //write 0
+  82   3            i=8;while(i>0)i--;    //至少60us
+  83   3            DS=1;
+  84   3            i++;i++;
+  85   3          }
+  86   2      
+  87   2        }
+  88   1      }
+  89          
+  90          void tmpchange(void)   //转换温度的函数（测一次温度）  //DS18B20 begin change
+  91          {
+  92   1        dsreset();
+  93   1        delay(1);
+  94   1        tmpwritebyte(0xcc);   //跳过ROM操作  // address all drivers on bus
+  95   1        tmpwritebyte(0x44);  //测一次温(温度转换命令))  //  initiates a single temperature conversion
+  96   1        //delay(100);
+  97   1      }
+  98          
+  99          uint tmp()               //get the temperature
+ 100          {
+ 101   1        float tt;
+ 102   1        uchar a,b;
+ 103   1      /*******************发送读取命令******************/
+ 104   1        dsreset();
+ 105   1        delay(1);
+ 106   1        tmpwritebyte(0xcc);      //跳过ROM操作
+ 107   1        tmpwritebyte(0xbe);     //读取（暂存器）
+ 108   1      /************************************************/
+ 109   1        a=tmpread();           //读取温度值共16位，先读低字节
+ 110   1        b=tmpread();           //再读高字节的8位
+ 111   1        temp=b;
+ 112   1        temp<<=8;             //two byte  compose a int variable
+ 113   1        temp=temp|a;           //temp是uint的2个字节的16位
+ 114   1        tt=temp*0.0625;      //芯片本身的计算公式
+ 115   1        //出场设置默认R0、R1为11。也就是12位分辨率，也就是1位代表0.0625摄氏度.
+ 116   1        temp=tt*10+0.5;
+ 117   1        return temp;
+C51 COMPILER V8.06   MAIN                                                                  08/12/2017 17:40:58 PAGE 3   
+
+ 118   1      }
+ 119          
+ 120          void readrom()          //read the serial
+ 121          {
+ 122   1        uchar sn1,sn2;
+ 123   1        dsreset();
+ 124   1        delay(1);
+ 125   1        tmpwritebyte(0x33);
+ 126   1        sn1=tmpread();
+ 127   1        sn2=tmpread();
+ 128   1      }
+ 129          
+ 130          
+ 131          void delay10ms()            //delay
+ 132            {
+ 133   1          uchar a,b;
+ 134   1          for(a=10;a>0;a--)
+ 135   1            for(b=60;b>0;b--);
+ 136   1         }
+ 137          
+ 138          /******************************液晶程序*********/
+ 139          void cmg88()//关数码管
+ 140          {
+ 141   1                      DU = 1;
+ 142   1                      P0 = 0X00;
+ 143   1                      DU = 0;
+ 144   1                      WE = 0;
+ 145   1      }
+ 146          
+ 147          void DelayUs2x(unsigned char t)
+ 148          {
+ 149   1              while(--t);
+ 150   1      }
+ 151          
+ 152          void DelayMs(unsigned char t)
+ 153          {
+ 154   1      
+ 155   1       while(t--)
+ 156   1       {
+ 157   2           //大致延时1mS
+ 158   2           DelayUs2x(245);
+ 159   2               DelayUs2x(245);
+ 160   2       }
+ 161   1      }
+ 162          
+ 163           bit LCD_Check_Busy(void)
+ 164           {
+ 165   1               P0 = 0xff;
+ 166   1               RS = 0;
+ 167   1               RW = 1;
+ 168   1               EN = 0;
+ 169   1               _nop_();
+ 170   1               EN = 1;
+ 171   1               return (bit)(P0 & 0x80);         //强制取最高位
+ 172   1       }
+ 173          
+ 174           void LCD_Write_Com(unsigned char com)
+ 175           {
+ 176   1               while(LCD_Check_Busy()); //忙则等待
+ 177   1               RS=0;
+ 178   1               RW=0;
+ 179   1               EN=1;
+C51 COMPILER V8.06   MAIN                                                                  08/12/2017 17:40:58 PAGE 4   
+
+ 180   1               P0 = com;
+ 181   1               _nop_();
+ 182   1               EN=0;
+ 183   1       }
+ 184          
+ 185           void LCD_Write_Data(unsigned char Data)
+ 186           {
+ 187   1               while(LCD_Check_Busy()); //忙则等待
+ 188   1               RS=1;
+ 189   1               RW=0;
+ 190   1               EN=1;
+ 191   1               P0 = Data;
+ 192   1               _nop_();
+ 193   1               EN=0;
+ 194   1       }
+ 195          
+ 196           void LCD_Clear(void)
+ 197           {
+ 198   1               LCD_Write_Com(0x01);
+ 199   1               DelayMs(5);
+ 200   1       }
+ 201          
+ 202           void LCD_Write_String(unsigned char x,unsigned char y,unsigned char *s)
+ 203           {
+ 204   1               if (y == 0)
+ 205   1               {
+ 206   2                              LCD_Write_Com(0x80 + x);     //表示第一行
+ 207   2               }
+ 208   1               else
+ 209   1               {
+ 210   2                              LCD_Write_Com(0xC0 + x);      //表示第二行
+ 211   2               }
+ 212   1               while (*s)
+ 213   1               {
+ 214   2                              LCD_Write_Data( *s);
+ 215   2                              s ++;
+ 216   2               }
+ 217   1       }
+ 218          
+ 219           void LCD_Write_Char(unsigned char x,unsigned char y,unsigned char Data)
+ 220           {
+ 221   1               if (y == 0)
+ 222   1               {
+ 223   2                      LCD_Write_Com(0x80 + x);
+ 224   2               }
+ 225   1               else
+ 226   1               {
+ 227   2                      LCD_Write_Com(0xC0 + x);
+ 228   2               }
+ 229   1               LCD_Write_Data( Data);
+ 230   1       }
+ 231          
+ 232           void LCD_Init(void)            //静态初始化
+ 233           {
+ 234   1         LCD_Write_Com(0x38);    /*显示模式设置*/
+ 235   1         DelayMs(5);
+ 236   1         LCD_Write_Com(0x38);
+ 237   1         DelayMs(5);
+ 238   1         LCD_Write_Com(0x38);
+ 239   1         DelayMs(5);
+ 240   1         LCD_Write_Com(0x38);
+ 241   1         LCD_Write_Com(0x08);    /*显示关闭*/
+C51 COMPILER V8.06   MAIN                                                                  08/12/2017 17:40:58 PAGE 5   
+
+ 242   1         LCD_Write_Com(0x01);    /*显示清屏*/
+ 243   1         LCD_Write_Com(0x06);    /*显示光标移动设置*/
+ 244   1         DelayMs(5);
+ 245   1         LCD_Write_Com(0x0C);    /*显示开及光标设置*/
+ 246   1         //LCD_Write_Com(0x0f);
+ 247   1       }
+ 248          
+ 249           void LCD_Init2(void)   //动态初始化
+ 250           {
+ 251   1                 LCD_Write_Com(0x38);    /*显示模式设置*/
+ 252   1                 DelayMs(5);
+ 253   1                 LCD_Write_Com(0x38);
+ 254   1                 DelayMs(5);
+ 255   1                 LCD_Write_Com(0x38);
+ 256   1                 DelayMs(5);
+ 257   1                 LCD_Write_Com(0x38);
+ 258   1                 LCD_Write_Com(0x08);    /*显示关闭*/
+ 259   1                 LCD_Write_Com(0x01);    /*显示清屏*/
+ 260   1                 LCD_Write_Com(0x06);    /*显示光标移动设置*/
+ 261   1                 DelayMs(5);
+ 262   1                 LCD_Write_Com(0x0C);    /*显示开及光标设置*/
+ 263   1                 LCD_Write_Com(0x07);
+ 264   1                 //LCD_Write_Com(0x80+0x10);
+ 265   1       }
+ 266          
+ 267          void display(uint temp)                 //1602液晶显示程序
+ 268          {
+ 269   1         uchar q,w,e;
+ 270   1         uint yy = abs(temp);
+ 271   1         q = temp / 100;
+ 272   1         w = temp %100 / 10;
+ 273   1         e = temp % 10;
+ 274   1         /*LCD_Write_Char(6,1,q+'0');
+ 275   1         LCD_Write_Char(7,1,w+'0');
+ 276   1         LCD_Write_Char(8,1,'.');
+ 277   1         LCD_Write_Char(9,1,e+'0');*/
+ 278   1         LCD_Write_Char(6,1,q+48);   //ASCII码表中 1和‘1’的区别
+ 279   1         LCD_Write_Char(7,1,w+48);
+ 280   1         LCD_Write_Char(8,1,'.');
+ 281   1         LCD_Write_Char(9,1,e+48);    
+ 282   1      }
+ 283          
+ 284          void main()
+ 285          {
+ 286   1        cmg88();//关数码管，点阵函数
+ 287   1        LCD_Init();   //静态初始化
+ 288   1        LCD_Clear();//清屏
+ 289   1        LCD_Write_String(3,0,"temperature");  
+ 290   1        while(1)
+ 291   1        {
+ 292   2            tmpchange();
+ 293   2            display(tmp());
+ 294   2        }
+ 295   1      }
+ 296          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    703    ----
+   CONSTANT SIZE    =     12    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+C51 COMPILER V8.06   MAIN                                                                  08/12/2017 17:40:58 PAGE 6   
+
+   DATA SIZE        =      2      12
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       2
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

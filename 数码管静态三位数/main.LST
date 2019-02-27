@@ -1,0 +1,127 @@
+C51 COMPILER V8.06   MAIN                                                                  08/07/2017 00:03:34 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #define uint unsigned int
+   3          #define uchar unsigned char
+   4          
+   5          uchar temp,aa,bai,shi,ge;
+   6          
+   7          sbit DU=P2^6;
+   8          sbit WE=P2^7;
+   9          
+  10          uchar code table[]={
+  11          0x3f,0x06,0x5b,0x4f,
+  12          0x66,0x6d,0x7d,0x07,
+  13          0x7f,0x6f,0x77,0x7c,
+  14          0x39,0x5e,0x79,0x71};
+  15          
+  16          void delay(uint z);
+  17          void init();
+  18          void display(uchar bai,uchar shi,uchar ge);
+  19          
+  20          void main()
+  21          {       
+  22   1              init();
+  23   1      
+  24   1              temp = 66;
+  25   1      
+  26   1              while(1)
+  27   1              {
+  28   2                      if(aa==5)
+  29   2                        {
+  30   3                              aa=0;
+  31   3                              bai=temp/100;
+  32   3                              shi=temp%100/10;
+  33   3                              ge=temp%10;
+  34   3                        }
+  35   2                      display(bai,shi,ge);
+  36   2              }
+  37   1      }
+  38          
+  39          
+  40          void delay(uint z)
+  41          {
+  42   1              uint x,y;
+  43   1              for(x=z;x>0;x--)
+  44   1                      for(y=112;y>0;y--);
+  45   1      }
+  46          
+  47          void init()
+  48          {       
+  49   1              WE=0;
+  50   1              DU=0;
+  51   1      
+  52   1              aa=0;
+  53   1              temp=0;
+  54   1              bai=0;
+  55   1              shi=0;
+C51 COMPILER V8.06   MAIN                                                                  08/07/2017 00:03:34 PAGE 2   
+
+  56   1              ge=0;
+  57   1      
+  58   1              TMOD=0x01;
+  59   1              TH0=(65536-50000)/256;
+  60   1              TL0=(65536-50000)%256;
+  61   1              EA=1;
+  62   1              ET0=1;
+  63   1              TR0=1;  
+  64   1      }
+  65          
+  66          
+  67          void display(uchar bai,uchar shi,uchar ge)
+  68          {
+  69   1                  DU=1;
+  70   1                      P0=table[bai];
+  71   1                      DU=0;
+  72   1                      P0=0xff;
+  73   1                      WE=1;
+  74   1                      P0=0xfe;
+  75   1                      WE=0;
+  76   1                      delay(1);
+  77   1      
+  78   1                      DU=1;
+  79   1                      P0=table[shi];
+  80   1                      DU=0;
+  81   1                      P0=0xff;
+  82   1                      WE=1;
+  83   1                      P0=0xfd;
+  84   1                      WE=0;
+  85   1                      delay(1);
+  86   1      
+  87   1                      DU=1;
+  88   1                      P0=table[ge];
+  89   1                      DU=0;
+  90   1                      P0=0xff;
+  91   1                      WE=1;
+  92   1                      P0=0xfb;
+  93   1                      WE=0;
+  94   1                      delay(1);
+  95   1      }
+  96            
+  97          void time0() interrupt 1
+  98          {
+  99   1          TH0=(65536-50000)/256;
+ 100   1              TL0=(65536-50000)%256;
+ 101   1              aa++;
+ 102   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    200    ----
+   CONSTANT SIZE    =     16    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      5    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

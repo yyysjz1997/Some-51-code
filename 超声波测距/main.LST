@@ -1,0 +1,273 @@
+C51 COMPILER V9.01   MAIN                                                                  08/19/2017 14:21:22 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+*** WARNING C500 IN LINE 1 OF MAIN.C: LICENSE ERROR (R230: CONNECT TO UVISION KERNEL FAILED)
+
+   1          #include <reg52.h>
+   2          #include <stc89x52.h>
+*** WARNING C318 IN LINE 2 OF main.c: can't open file 'stc89x52.h'
+   3          #include <intrins.h>
+   4          #define uint unsigned int
+   5          #define uchar unsigned char
+   6          sbit RS = P1^0;   //定义端口
+   7          sbit RW = P1^1;
+   8          sbit EN = P2^5;
+   9          sbit DU = P2^6;
+  10          sbit WE = P2^7;
+  11          sbit RX = P2^0 ;//接收端
+  12          sbit TX = P2^1 ;//控制端
+  13          uint x,y;
+  14          uchar num,num_m;
+  15          void delay(uint z);
+  16          void DelayUs2x(unsigned char t);
+  17          void DelayMs(unsigned char t);
+  18          bit LCD_Check_Busy(void);
+  19          void LCD_Write_Com(unsigned char com) ;
+  20          void LCD_Write_Data(unsigned char Data);
+  21          void LCD_Write_String(unsigned char x,unsigned char y,unsigned char *s);
+  22          void LCD_Write_Char(unsigned char x,unsigned char y,unsigned char Data);
+  23          void LCD_Clear(void);
+  24          void distance_show();
+  25          uchar shu;
+  26          uint time;
+  27          unsigned long dis;
+  28          unsigned long distance[4];
+  29          unsigned char code ASCII[10] = {0,1,2,3,4
+  30          ,5,6,7,8,9};
+  31          /************************************超声波模块*****************************/
+  32          void start_ultrasonic()  //开启超声波
+  33          {
+  34   1              TX = 1;
+  35   1              delay(100);      //两次测距之间的时间间隔
+  36   1              TX = 0;
+  37   1      }
+  38          
+  39          void  count_high()
+  40          {
+  41   1              TR0 = 1;
+  42   1              while(RX);       //计数
+  43   1              TR0 = 0;
+  44   1              shu = 0;
+  45   1              distance_show();        
+  46   1      }
+  47          
+  48          void time0()interrupt 1
+  49          {
+  50   1              shu++;  
+  51   1      }
+  52          
+  53          void distance_show()
+C51 COMPILER V9.01   MAIN                                                                  08/19/2017 14:21:22 PAGE 2   
+
+  54          {
+  55   1              time = TH0 * 256 + TL0;
+  56   1              TH0 = 0;
+  57   1              TL0 = 0;
+  58   1      
+  59   1              dis = (time * 1.7)/10 + 10;
+  60   1              if(dis > 2800||dis < 25)
+  61   1              {
+  62   2                      LCD_Write_String(0,1,"out of range!   ");
+  63   2              }
+  64   1              else
+  65   1              {
+  66   2                      distance[0]=dis%10;
+  67   2                  distance[1]=dis/10%10;
+  68   2                  distance[2]=dis/100%10;
+  69   2                  distance[3]=dis/1000;
+  70   2      
+  71   2                  LCD_Write_String(0,1,"Distance:");
+  72   2                  LCD_Write_Char(9, 1, ASCII[distance[3]]+'0');
+  73   2                  LCD_Write_Char(10, 1, ASCII[distance[2]]+'0');
+  74   2                  LCD_Write_Char(11, 1, ASCII[distance[1]]+'0');
+  75   2              LCD_Write_Char(12, 1, '.');
+  76   2                  LCD_Write_Char(13, 1, ASCII[distance[0]]+'0');
+  77   2                      LCD_Write_Char(14, 1, 'C');
+  78   2                      LCD_Write_Char(15, 1, 'M');
+  79   2              }
+  80   1              
+  81   1      }
+  82          
+  83          
+  84          
+  85          
+  86          /************************************超声波模块*****************************/
+  87          
+  88          /**********************************1602液晶******************************/
+  89          void cmg88()//关数码管
+  90          {
+  91   1                      DU = 1;
+  92   1                      P0 = 0X00;
+  93   1                      DU = 0;
+  94   1                      WE = 0;
+  95   1      }
+  96          
+  97          void DelayUs2x(unsigned char t)
+  98          {
+  99   1              while(--t);
+ 100   1      }
+ 101          
+ 102          void DelayMs(unsigned char t)
+ 103          {
+ 104   1      
+ 105   1       while(t--)
+ 106   1       {
+ 107   2           //大致延时1mS
+ 108   2           DelayUs2x(245);
+ 109   2               DelayUs2x(245);
+ 110   2       }
+ 111   1      }
+ 112          
+ 113           bit LCD_Check_Busy(void)
+ 114           {
+ 115   1               P0 = 0xff;
+C51 COMPILER V9.01   MAIN                                                                  08/19/2017 14:21:22 PAGE 3   
+
+ 116   1               RS = 0;
+ 117   1               RW = 1;
+ 118   1               EN = 0;
+ 119   1               _nop_();
+ 120   1               EN = 1;
+ 121   1               return (bit)(P0 & 0x80);         //强制取最高位
+ 122   1       }
+ 123          
+ 124           void LCD_Write_Com(unsigned char com)
+ 125           {
+ 126   1               while(LCD_Check_Busy()); //忙则等待
+ 127   1               RS=0;
+ 128   1               RW=0;
+ 129   1               EN=1;
+ 130   1               P0 = com;
+ 131   1               _nop_();
+ 132   1               EN=0;
+ 133   1       }
+ 134          
+ 135           void LCD_Write_Data(unsigned char Data)
+ 136           {
+ 137   1               while(LCD_Check_Busy()); //忙则等待
+ 138   1               RS=1;
+ 139   1               RW=0;
+ 140   1               EN=1;
+ 141   1               P0 = Data;
+ 142   1               _nop_();
+ 143   1               EN=0;
+ 144   1       }
+ 145          
+ 146           void LCD_Clear(void)
+ 147           {
+ 148   1               LCD_Write_Com(0x01);
+ 149   1               DelayMs(5);
+ 150   1       }
+ 151          
+ 152           void LCD_Write_String(unsigned char x,unsigned char y,unsigned char *s)
+ 153           {
+ 154   1               if (y == 0)
+ 155   1               {
+ 156   2                              LCD_Write_Com(0x80 + x);     //表示第一行
+ 157   2               }
+ 158   1               else
+ 159   1               {
+ 160   2                              LCD_Write_Com(0xC0 + x);      //表示第二行
+ 161   2               }
+ 162   1               while (*s)
+ 163   1               {
+ 164   2                              LCD_Write_Data( *s);
+ 165   2                              s ++;
+ 166   2               }
+ 167   1       }
+ 168          
+ 169           void LCD_Write_Char(unsigned char x,unsigned char y,unsigned char Data)
+ 170           {
+ 171   1               if (y == 0)
+ 172   1               {
+ 173   2                      LCD_Write_Com(0x80 + x);
+ 174   2               }
+ 175   1               else
+ 176   1               {
+ 177   2                      LCD_Write_Com(0xC0 + x);
+C51 COMPILER V9.01   MAIN                                                                  08/19/2017 14:21:22 PAGE 4   
+
+ 178   2               }
+ 179   1               LCD_Write_Data( Data);
+ 180   1       }
+ 181          
+ 182           void LCD_Init(void)            //静态初始化
+ 183           {
+ 184   1         LCD_Write_Com(0x38);    /*显示模式设置*/
+ 185   1         DelayMs(5);
+ 186   1         LCD_Write_Com(0x38);
+ 187   1         DelayMs(5);
+ 188   1         LCD_Write_Com(0x38);
+ 189   1         DelayMs(5);
+ 190   1         LCD_Write_Com(0x38);
+ 191   1         LCD_Write_Com(0x08);    /*显示关闭*/
+ 192   1         LCD_Write_Com(0x01);    /*显示清屏*/
+ 193   1         LCD_Write_Com(0x06);    /*显示光标移动设置*/
+ 194   1         DelayMs(5);
+ 195   1         LCD_Write_Com(0x0C);    /*显示开及光标设置*/
+ 196   1         //LCD_Write_Com(0x0f);
+ 197   1       }
+ 198          
+ 199          void delay(uint z)
+ 200          {
+ 201   1              uint x,y;
+ 202   1              for(x=z;z>0;z--)
+ 203   1                      for(y=112;y>0;y--);
+ 204   1      }
+ 205          
+ 206          void _1602_init()
+ 207          {
+ 208   1              cmg88();//关数码管，点阵函数
+ 209   1              LCD_Init();   //静态初始化
+ 210   1              LCD_Clear();//清屏      
+ 211   1      }
+ 212          
+ 213          /************************1602液晶************************************/
+ 214          void main(void)
+ 215          {
+ 216   1          uint i;
+ 217   1              _1602_init();
+ 218   1      
+ 219   1              TMOD=0x01;
+ 220   1          EA=1;                 
+ 221   1          TH0=0;
+ 222   1          TL0=0;
+ 223   1          ET0=1; 
+ 224   1              LCD_Write_String(2,0,"come on baby");         
+ 225   1      
+ 226   1              while(1)
+ 227   1                {
+ 228   2                      RX=1;
+ 229   2                  start_ultrasonic();          //启动模块
+ 230   2              for(i = 7510;i > 0;i--)
+ 231   2                  {
+ 232   3      
+ 233   3                     if(RX==1)
+ 234   3                         {
+ 235   4                 count_high();                 //超声波高电平脉冲宽度计算函数
+ 236   4                         }
+ 237   3               }
+ 238   2                }
+ 239   1      }
+C51 COMPILER V9.01   MAIN                                                                  08/19/2017 14:21:22 PAGE 5   
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    694    ----
+   CONSTANT SIZE    =     50    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     29       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  0 ERROR(S)

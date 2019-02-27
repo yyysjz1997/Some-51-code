@@ -1,0 +1,255 @@
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 15:27:12 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          //J8插光度和温度传感器
+   2          
+   3          
+   4          #include<reg51.h>
+   5          #include<intrins.h>
+   6          
+   7          #define uchar unsigned char
+   8          #define uint unsigned int 
+   9          #define Write_PCF8591 0x90
+  10          #define Read_PCF8591 0x91
+  11          #define Control_Byte 0x80         //0xf0为实验板上的L3亮
+  12          
+  13          sbit SCL=P2^1;
+  14          sbit SDA=P2^0;
+  15          sbit RST=P2^4;   //时钟 加上后可以关掉DS1302芯片输出
+  16          sbit DU=P2^6;
+  17          sbit WE=P2^7;
+  18          
+  19          unsigned char code table[]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,
+  20                                  0x07,0x7f,0x6f,0x77,0x7c,0x39,0x5e,0x79,0x71};
+  21          
+  22          uchar num,temp;
+  23          
+  24          void delayms(uint z)
+  25          {
+  26   1          uint x,y;
+  27   1          for(x=0;x<z;x++)
+  28   1              for(y=0;y<112;y++);
+  29   1      }
+  30          
+  31          void delay()
+  32          {
+  33   1          _nop_();_nop_();
+  34   1          _nop_();_nop_();
+  35   1          _nop_();_nop_();
+  36   1          _nop_();_nop_();
+  37   1      }
+  38          /***************************************IIC***************************************/
+  39          void init_IIC()
+  40          {
+  41   1          SDA=1;
+  42   1          delay();
+  43   1          SCL=1;
+  44   1          delay();
+  45   1      }
+  46          
+  47          void start()
+  48          {
+  49   1          SDA=1;
+  50   1          delay();
+  51   1          SCL=1;
+  52   1          delay();
+  53   1          SDA=0;
+  54   1          delay();
+  55   1      }
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 15:27:12 PAGE 2   
+
+  56          
+  57          void stop()
+  58          {
+  59   1          SDA=0;
+  60   1          delay();
+  61   1          SCL=1;
+  62   1          delay();
+  63   1          SDA=1;
+  64   1          delay();
+  65   1      }
+  66          
+  67          void ack()   //应答
+  68          {
+  69   1          uchar i=0;
+  70   1          SCL=1;
+  71   1          delay();
+  72   1          while((SDA==1)&&(i<250)) i++;
+  73   1          SCL=0;
+  74   1          delay();
+  75   1      }
+  76          
+  77          void noack()  //非应答
+  78          {
+  79   1          SDA=1;
+  80   1          delay();
+  81   1          SCL=1;
+  82   1          delay();
+  83   1          SCL=0;
+  84   1          delay();
+  85   1      }
+  86          
+  87          void Write_Byte(uchar dat)
+  88          {
+  89   1          uchar i;
+  90   1          for(i=0;i<8;i++)
+  91   1          {
+  92   2              SCL=0;
+  93   2              delay();
+  94   2              if(dat&0x80)
+  95   2              {
+  96   3                  SDA=1;
+  97   3              }
+  98   2              else
+  99   2              {
+ 100   3                  SDA=0;
+ 101   3              }
+ 102   2              dat=dat<<1;
+ 103   2              SCL=1;
+ 104   2              delay();
+ 105   2          }
+ 106   1          SCL=0;
+ 107   1          delay();
+ 108   1          SDA=1;
+ 109   1          delay();    
+ 110   1      }
+ 111          
+ 112          uchar Read_Byte()
+ 113          {
+ 114   1          uchar i,dat;
+ 115   1          SCL=0;
+ 116   1          delay();
+ 117   1          SDA=1;
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 15:27:12 PAGE 3   
+
+ 118   1          delay();
+ 119   1          for(i=0;i<8;i++)
+ 120   1          {
+ 121   2              SCL=1;
+ 122   2              delay();
+ 123   2              dat=dat<<1;
+ 124   2              if(SDA)
+ 125   2              {
+ 126   3                  dat++;
+ 127   3              }
+ 128   2              SCL=0;
+ 129   2              delay();
+ 130   2          }
+ 131   1          return dat;
+ 132   1      }
+ 133          /******************************************************************IIC********************************/
+ 134          /*****************************************************************AD/DA*******************************/
+ 135          void DAC_PCF8591(uchar add,uchar dat)//写入DA数模转换值
+ 136          {
+ 137   1          start();
+ 138   1          Write_Byte(add);            //写入芯片地址
+ 139   1          ack();
+ 140   1          Write_Byte(Control_Byte);   //写入控制位
+ 141   1          ack();
+ 142   1          Write_Byte(dat);   //写数据
+ 143   1          ack();
+ 144   1          stop();
+ 145   1      }
+ 146          
+ 147          uchar ADC_Read(uchar add0,uchar add1,uchar chl)         //chl=0，则重复一遍停止；chl=1，则循环 用0就好
+ 148          {               //读取AD模数转换的值
+ 149   1          uchar dat;
+ 150   1          start();
+ 151   1          Write_Byte(add0);    //芯片地址
+ 152   1          ack();
+ 153   1          Write_Byte(Control_Byte|chl);       //选择的通道
+ 154   1          ack();
+ 155   1          start();
+ 156   1          Write_Byte(add1);      //读入地址
+ 157   1          ack();
+ 158   1          dat=Read_Byte();     //读数据
+ 159   1          noack();
+ 160   1          stop();
+ 161   1          return dat;
+ 162   1      }
+ 163          /****************************************************AD/DA*************************************/
+ 164          void display (uchar num)
+ 165          {       
+ 166   1              uchar bai,shi,ge;
+ 167   1                      bai = num / 100;
+ 168   1                      shi = num / 10 %10;
+ 169   1                      ge = num % 10;
+ 170   1      
+ 171   1                      DU=1;
+ 172   1                      P0=table[ge];
+ 173   1                      DU=0;
+ 174   1                      WE=1;
+ 175   1                      P0=0xfb;
+ 176   1                      WE=0;
+ 177   1                      delayms(5);
+ 178   1      
+ 179   1                      DU=1;
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 15:27:12 PAGE 4   
+
+ 180   1                      P0=table[shi];
+ 181   1                      DU=0;
+ 182   1                      WE=1;
+ 183   1                      P0=0xfd;
+ 184   1                      WE=0;
+ 185   1              delayms(5);
+ 186   1      
+ 187   1                      DU=1;
+ 188   1                      P0=table[bai];
+ 189   1                      DU=0;
+ 190   1                      WE=1;
+ 191   1                      P0=0xfe;
+ 192   1                      WE=0;
+ 193   1                      delayms(5);
+ 194   1      }
+ 195          
+ 196          void init_time0()
+ 197          {
+ 198   1                  TMOD |= 0x01;         //使用模式1，16位定时器，使用"|"符号可以在使用多个定时器时不受影响                 
+ 199   1                      TH0=0x00;                 //重新赋值 1/68s
+ 200   1                      TL0=0x00;
+ 201   1                      EA=1;            //总中断打开
+ 202   1                      ET0=1;           //定时器中断打开
+ 203   1                      TR0=1;           //定时器开关打开       
+ 204   1      }
+ 205          
+ 206          void main()
+ 207          {
+ 208   1              init_IIC();
+ 209   1              init_time0();
+ 210   1              RST = 0;
+ 211   1          DU = 0;
+ 212   1              WE = 0;
+ 213   1              while(1)
+ 214   1              {
+ 215   2                       display(num);
+ 216   2              }       
+ 217   1      }
+ 218          
+ 219          void time0()interrupt 1
+ 220          {
+ 221   1              TH0 = 0;
+ 222   1              TL0 = 0;
+ 223   1              //DAC_PCF8591(Write_PCF8591,0);
+ 224   1              num = ADC_Read(Write_PCF8591,Read_PCF8591,0);
+ 225   1      
+ 226   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    419    ----
+   CONSTANT SIZE    =     16    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

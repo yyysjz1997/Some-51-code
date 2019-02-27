@@ -1,0 +1,241 @@
+C51 COMPILER V8.06   MAIN                                                                  08/10/2017 17:21:52 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include<reg52.h> //包含头文件，一般情况不需要改动，头文件包含特殊功能寄存器的定义
+   2          #include<intrins.h>
+   3          #define uint unsigned int
+   4          #define uchar unsigned char
+   5          sbit RS = P1^0;   //定义端口
+   6          sbit RW = P1^1;
+   7          sbit EN = P2^5;
+   8          sbit DU = P2^6;
+   9          sbit WE = P2^7;
+  10          uint x,y;
+  11          uchar num,num_m;
+  12          
+  13          void cmg88()//关数码管
+  14          {
+  15   1                      DU = 1;
+  16   1                      P0 = 0X00;
+  17   1                      DU = 0;
+  18   1                      WE = 0;
+  19   1      }
+  20          /*------------------------------------------------
+  21           uS延时函数，含有输入参数 unsigned char t，无返回值
+  22           unsigned char 是定义无符号字符变量，其值的范围是
+  23           0~255 这里使用晶振12M，精确延时请使用汇编,大致延时
+  24           长度如下 T=tx2+5 uS
+  25          ------------------------------------------------*/
+  26          void DelayUs2x(unsigned char t)
+  27          {
+  28   1              while(--t);
+  29   1      }
+  30          /*------------------------------------------------
+  31           mS延时函数，含有输入参数 unsigned char t，无返回值
+  32           unsigned char 是定义无符号字符变量，其值的范围是
+  33           0~255 这里使用晶振12M，精确延时请使用汇编
+  34          ------------------------------------------------*/
+  35          void DelayMs(unsigned char t)
+  36          {
+  37   1      
+  38   1       while(t--)
+  39   1       {
+  40   2           //大致延时1mS
+  41   2           DelayUs2x(245);
+  42   2               DelayUs2x(245);
+  43   2       }
+  44   1      }
+  45          
+  46           bit LCD_Check_Busy(void)
+  47           {
+  48   1               P0 = 0xff;
+  49   1               RS = 0;
+  50   1               RW = 1;
+  51   1               EN = 0;
+  52   1               _nop_();
+  53   1               EN = 1;
+  54   1               return (bit)(P0 & 0x80);         //强制取最高位
+  55   1       }
+C51 COMPILER V8.06   MAIN                                                                  08/10/2017 17:21:52 PAGE 2   
+
+  56          
+  57           void LCD_Write_Com(unsigned char com)
+  58           {
+  59   1               while(LCD_Check_Busy()); //忙则等待
+  60   1               RS=0;
+  61   1               RW=0;
+  62   1               EN=1;
+  63   1               P0 = com;
+  64   1               _nop_();
+  65   1               EN=0;
+  66   1       }
+  67          
+  68           void LCD_Write_Data(unsigned char Data)
+  69           {
+  70   1               while(LCD_Check_Busy()); //忙则等待
+  71   1               RS=1;
+  72   1               RW=0;
+  73   1               EN=1;
+  74   1               P0 = Data;
+  75   1               _nop_();
+  76   1               EN=0;
+  77   1       }
+  78          
+  79           void LCD_Clear(void)
+  80           {
+  81   1               LCD_Write_Com(0x01);
+  82   1               DelayMs(5);
+  83   1       }
+  84          
+  85           void LCD_Write_String(unsigned char x,unsigned char y,unsigned char *s)
+  86           {
+  87   1               if (y == 0)
+  88   1               {
+  89   2                              LCD_Write_Com(0x80 + x);     //表示第一行
+  90   2               }
+  91   1               else
+  92   1               {
+  93   2                              LCD_Write_Com(0xC0 + x);      //表示第二行
+  94   2               }
+  95   1               while (*s)
+  96   1               {
+  97   2                              LCD_Write_Data( *s);
+  98   2                              s ++;
+  99   2               }
+ 100   1       }
+ 101          
+ 102           void LCD_Write_Char(unsigned char x,unsigned char y,unsigned char Data)
+ 103           {
+ 104   1               if (y == 0)
+ 105   1               {
+ 106   2                      LCD_Write_Com(0x80 + x);
+ 107   2               }
+ 108   1               else
+ 109   1               {
+ 110   2                      LCD_Write_Com(0xC0 + x);
+ 111   2               }
+ 112   1               LCD_Write_Data( Data);
+ 113   1       }
+ 114          
+ 115           void LCD_Init(void)            //静态初始化
+ 116           {
+ 117   1         LCD_Write_Com(0x38);    /*显示模式设置*/
+C51 COMPILER V8.06   MAIN                                                                  08/10/2017 17:21:52 PAGE 3   
+
+ 118   1         DelayMs(5);
+ 119   1         LCD_Write_Com(0x38);
+ 120   1         DelayMs(5);
+ 121   1         LCD_Write_Com(0x38);
+ 122   1         DelayMs(5);
+ 123   1         LCD_Write_Com(0x38);
+ 124   1         LCD_Write_Com(0x08);    /*显示关闭*/
+ 125   1         LCD_Write_Com(0x01);    /*显示清屏*/
+ 126   1         LCD_Write_Com(0x06);    /*显示光标移动设置*/
+ 127   1         DelayMs(5);
+ 128   1         LCD_Write_Com(0x0C);    /*显示开及光标设置*/
+ 129   1         //LCD_Write_Com(0x0f);
+ 130   1       }
+ 131          
+ 132           void LCD_Init2(void)   //动态初始化
+ 133           {
+ 134   1                 LCD_Write_Com(0x38);    /*显示模式设置*/
+ 135   1                 DelayMs(5);
+ 136   1                 LCD_Write_Com(0x38);
+ 137   1                 DelayMs(5);
+ 138   1                 LCD_Write_Com(0x38);
+ 139   1                 DelayMs(5);
+ 140   1                 LCD_Write_Com(0x38);
+ 141   1                 LCD_Write_Com(0x08);    /*显示关闭*/
+ 142   1                 LCD_Write_Com(0x01);    /*显示清屏*/
+ 143   1                 LCD_Write_Com(0x06);    /*显示光标移动设置*/
+ 144   1                 DelayMs(5);
+ 145   1                 LCD_Write_Com(0x0C);    /*显示开及光标设置*/
+ 146   1                 LCD_Write_Com(0x07);
+ 147   1                 //LCD_Write_Com(0x80+0x10);
+ 148   1       }      
+ 149          
+ 150          void delay(uint z)
+ 151          {
+ 152   1              uint x,y;
+ 153   1              for(x=z;z>0;z--)
+ 154   1                      for(y=112;y>0;y--);
+ 155   1      }
+ 156          
+ 157          #if 1
+ 158          void main(void)
+ 159          {
+ 160   1              cmg88();//关数码管，点阵函数
+ 161   1              LCD_Init2();   //动态初始化
+ 162   1              LCD_Clear();//清屏
+ 163   1              while (1)
+ 164   1              {
+ 165   2                       //LCD_Write_Char(7,0,'o');
+ 166   2                       //LCD_Write_Char(8,0,'k');
+ 167   2                       //LCD_Write_String(1,1,"hello world");
+ 168   2                       for(num = 40;num > 0;num--)
+ 169   2                       {
+ 170   3                               LCD_Write_String(num,0," YYY AND YJG ");
+ 171   3                           LCD_Write_String(num+2,1," FOREVER ");
+ 172   3                               if(num == 24)
+ 173   3                               {
+ 174   4                                      LCD_Write_String(6,0," YYY AND YJG ");
+ 175   4                              LCD_Write_String(8,1," FOREVER ");
+ 176   4                                      delay(5000);
+ 177   4                                      LCD_Write_Com(0x01);      
+ 178   4                                  for(num_m = 24;num_m > 0;num_m--)
+ 179   4                                      {               
+C51 COMPILER V8.06   MAIN                                                                  08/10/2017 17:21:52 PAGE 4   
+
+ 180   5                                                  LCD_Write_String(num_m,0," YYY AND YJG ");
+ 181   5                                                      LCD_Write_String(num_m+2,1," FOREVER ");
+ 182   5                                                      delay(500);
+ 183   5                                                      LCD_Write_Com(0x01);
+ 184   5                                                      delay(50);        
+ 185   5                                      }
+ 186   4                               }
+ 187   3                               else
+ 188   3                               {
+ 189   4                                       delay(500);
+ 190   4                       LCD_Write_Com(0x01);
+ 191   4                                       delay(50);
+ 192   4                               }
+ 193   3                               
+ 194   3                       }
+ 195   2              } 
+ 196   1      }
+ 197          
+ 198          #elif 0
+              void main(void)
+              {
+                      cmg88();//关数码管，点阵函数
+                      LCD_Init();   //静态初始化
+                      LCD_Clear();//清屏
+                      while (1)
+                      {
+                               LCD_Write_Char(7,0,'o');
+                               LCD_Write_Char(8,0,'k');
+                               LCD_Write_String(2,1,"hello world!");
+                      }
+              }
+              
+              #endif
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    412    ----
+   CONSTANT SIZE    =     24    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      6       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

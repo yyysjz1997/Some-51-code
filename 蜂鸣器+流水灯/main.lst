@@ -1,0 +1,53 @@
+C51 COMPILER V8.06   MAIN                                                                  04/03/2017 22:09:07 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ·äÃùÆ÷+Á÷Ë®µÆ\main.c BROWSE DEBUG OBJECTEXTEND PRINT(.\main.lst) OBJECT(mai
+                    -n.obj)
+
+line level    source
+
+   1          #include<reg52.h>
+   2          #define ON 0;
+   3          #define OFF 1;
+   4          sbit FM=P2^3;
+   5          void delay(unsigned int xms);
+   6          void main()
+   7          {
+   8   1              unsigned char i;
+   9   1              while(1)
+  10   1              {
+  11   2                      P1=0xfe;
+  12   2                      for(i=0;i<8;i++)
+  13   2                      {
+  14   3                              delay(100);
+  15   3                              P1<<=1;
+  16   3                              P1=P1|0x01;
+  17   3                              FM=ON;
+  18   3                              delay(100);
+  19   3                              FM=OFF;
+  20   3                      }
+  21   2              }
+  22   1      }
+  23          
+  24          void delay(unsigned int xms)
+  25          {
+  26   1              unsigned int i,j;
+  27   1              for(i=xms;i>0;i--)
+  28   1                      for(j=112;j>0;j--);
+  29   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     74    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,220 @@
+C51 COMPILER V8.06   MAIN                                                                  08/12/2017 16:12:22 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #define uchar unsigned char
+   3          #define uint unsigned int
+   4          sbit DS=P2^2;      //总线     //define interface
+   5          uint temp;             // variable of temperature
+   6          uchar flag1;            // sign of the result positive or negative
+   7          sbit dula=P2^6;
+   8          sbit wela=P2^7;
+   9          unsigned char code table[]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,
+  10                                  0x07,0x7f,0x6f,0x77,0x7c,0x39,0x5e,0x79,0x71};                          //无小数点
+  11          unsigned char code table1[]={0xbf,0x86,0xdb,0xcf,0xe6,0xed,0xfd,
+  12                                  0x87,0xff,0xef};                  //加小数点儿
+  13          
+  14          void delay(uint count)      //delay
+  15          {
+  16   1        uint i;
+  17   1        while(count)
+  18   1        {
+  19   2          i=200;
+  20   2          while(i>0)
+  21   2          i--;
+  22   2          count--;
+  23   2        }
+  24   1      }
+  25          
+  26          
+  27          void dsreset(void)       //send reset and initialization command
+  28          {
+  29   1        uint i;
+  30   1        DS=0;
+  31   1        i=103;                                   //将总线拉低480us~960us
+  32   1        while(i>0)i--;
+  33   1        DS=1;                                    //然后拉高总线，若DS18B20做出反应会将在15us~60us后将总线拉低
+  34   1        i=4;                                     //15us~60us等待
+  35   1        while(i>0)i--;
+  36   1        //while(DS);
+  37   1      }
+  38          
+  39          bit tmpreadbit(void)       //read a bit
+  40          {
+  41   1         uint i;
+  42   1         bit dat;
+  43   1         DS=0;i++;          //i++ for delay
+  44   1         DS=1;i++;i++;
+  45   1         dat=DS;
+  46   1         i=8;while(i>0)i--;
+  47   1         return (dat);
+  48   1      }
+  49          
+  50          uchar tmpread(void)   //read a byte date
+  51          {
+  52   1        uchar i,j,dat;
+  53   1        dat=0;
+  54   1        for(i=1;i<=8;i++)
+  55   1        {
+C51 COMPILER V8.06   MAIN                                                                  08/12/2017 16:12:22 PAGE 2   
+
+  56   2          j=tmpreadbit();
+  57   2          dat=(j<<7)|(dat>>1);   //读出的数据最低位在最前面，这样刚好一个字节在DAT里
+  58   2        }
+  59   1        return(dat);
+  60   1      }
+  61          
+  62          void tmpwritebyte(uchar dat)   //write a byte to ds18b20
+  63          {
+  64   1        uint i;
+  65   1        uchar j;
+  66   1        bit testb;
+  67   1        for(j=1;j<=8;j++)      //一个字节8位数据，每次只能写一个位
+  68   1        {
+  69   2          testb=dat&0x01;  //依次将dat的每一位赋值给testb
+  70   2          dat=dat>>1;
+  71   2          if(testb)     //write 1
+  72   2          {
+  73   3            DS=0;
+  74   3            i++;i++;  //大于1us
+  75   3            DS=1;
+  76   3            i=8;while(i>0)i--;  //至少60us
+  77   3          }
+  78   2          else
+  79   2          {
+  80   3            DS=0;       //write 0
+  81   3            i=8;while(i>0)i--;    //至少60us
+  82   3            DS=1;
+  83   3            i++;i++;
+  84   3          }
+  85   2      
+  86   2        }
+  87   1      }
+  88          
+  89          void tmpchange(void)   //转换温度的函数（测一次温度）  //DS18B20 begin change
+  90          {
+  91   1        dsreset();
+  92   1        delay(1);
+  93   1        tmpwritebyte(0xcc);   //跳过ROM操作  // address all drivers on bus
+  94   1        tmpwritebyte(0x44);  //测一次温(温度转换命令))  //  initiates a single temperature conversion
+  95   1        //delay(100);
+  96   1      }
+  97          
+  98          uint tmp()               //get the temperature
+  99          {
+ 100   1        float tt;
+ 101   1        uchar a,b;
+ 102   1      /*******************发送读取命令******************/
+ 103   1        dsreset();
+ 104   1        delay(1);
+ 105   1        tmpwritebyte(0xcc);      //跳过ROM操作
+ 106   1        tmpwritebyte(0xbe);     //读取（暂存器）
+ 107   1      /************************************************/
+ 108   1        a=tmpread();           //读取温度值共16位，先读低字节
+ 109   1        b=tmpread();           //再读高字节的8位
+ 110   1        temp=b;
+ 111   1        temp<<=8;             //two byte  compose a int variable
+ 112   1        temp=temp|a;           //temp是uint的2个字节的16位
+ 113   1        tt=temp*0.0625;      //芯片本身的计算公式
+ 114   1        //出场设置默认R0、R1为11。也就是12位分辨率，也就是1位代表0.0625摄氏度.
+ 115   1        temp=tt*10+0.5;
+ 116   1        return temp;
+ 117   1      }
+C51 COMPILER V8.06   MAIN                                                                  08/12/2017 16:12:22 PAGE 3   
+
+ 118          
+ 119          void readrom()          //read the serial
+ 120          {
+ 121   1        uchar sn1,sn2;
+ 122   1        dsreset();
+ 123   1        delay(1);
+ 124   1        tmpwritebyte(0x33);
+ 125   1        sn1=tmpread();
+ 126   1        sn2=tmpread();
+ 127   1      }
+ 128          
+ 129          
+ 130          void delay10ms()            //delay
+ 131            {
+ 132   1          uchar a,b;
+ 133   1          for(a=10;a>0;a--)
+ 134   1            for(b=60;b>0;b--);
+ 135   1         }
+ 136          
+ 137          void display(uint temp)                 //显示程序
+ 138          {
+ 139   1         uchar A1,A2,A2t,A3,ser;
+ 140   1         ser=temp/10;
+ 141   1         SBUF=ser;
+ 142   1         A1=temp/100;
+ 143   1         A2t=temp%100;
+ 144   1         A2=A2t/10;
+ 145   1         A3=A2t%10;
+ 146   1         dula=0;
+ 147   1         P0=table[A1];                //显示百位
+ 148   1         dula=1;
+ 149   1         dula=0;
+ 150   1      
+ 151   1         wela=0;
+ 152   1         P0=0xfe;
+ 153   1         wela=1;
+ 154   1         wela=0;
+ 155   1         delay(1);
+ 156   1      
+ 157   1         dula=0;
+ 158   1         P0=table1[A2];               //显示十位
+ 159   1         dula=1;
+ 160   1         dula=0;
+ 161   1      
+ 162   1         wela=0;
+ 163   1         P0=0xfd;
+ 164   1         wela=1;
+ 165   1         wela=0;
+ 166   1         delay(1);
+ 167   1      
+ 168   1         P0=table[A3];                //显示个位
+ 169   1         dula=1;
+ 170   1         dula=0;
+ 171   1      
+ 172   1         P0=0xfb;
+ 173   1         wela=1;
+ 174   1         wela=0;
+ 175   1         delay(1);
+ 176   1      }
+ 177          
+ 178          
+ 179          void main()
+C51 COMPILER V8.06   MAIN                                                                  08/12/2017 16:12:22 PAGE 4   
+
+ 180          {
+ 181   1       uchar a;
+ 182   1        do
+ 183   1        {
+ 184   2            tmpchange();
+ 185   2            for(a=100;a>0;a--)
+ 186   2            {
+ 187   3                display(tmp());
+ 188   3            }
+ 189   2        }while(1);
+ 190   1      }
+ 191          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    495    ----
+   CONSTANT SIZE    =     26    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      3       8
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       2
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

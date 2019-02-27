@@ -1,0 +1,72 @@
+C51 COMPILER V8.06   MAIN                                                                  07/27/2017 22:14:36 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include<reg52.h>
+   2          sbit WE=P2^7;
+   3          sbit DU=P2^6;
+   4          sbit D1=P1^0;
+   5          unsigned  char  num;
+   6          unsigned char code yyy[] ={
+   7          0x3f,0x06,0x5b,0x4f,0x66,0x6d,
+   8          0x7d,0x07,0x7f,0x6f,0x77,0x7c,
+   9          0x39,0x5e,0x79,0x71
+  10          };      
+  11          void delay(unsigned int xms);
+  12          void main()
+  13          {
+  14   1          EA=1;        //开总中断
+  15   1              EX0=1;                     //开外部中断0
+  16   1          IT0=0;   //0为低电平触发 ；1位跳变沿触发
+  17   1      
+  18   1      
+  19   1              WE=1;  //打开位选锁存器
+  20   1              P0=0x00; //位选低电平有效
+  21   1          WE=0;               //关闭
+  22   1      
+  23   1              while(1)
+  24   1              {
+  25   2                      for(num=0;num<16;num++)
+  26   2                      {
+  27   3                            D1=1;
+  28   3      
+  29   3                                DU=1;
+  30   3                                P0=yyy[num];
+  31   3                        DU=0;
+  32   3                                delay(1000);
+  33   3                      }
+  34   2              }
+  35   1      }
+  36          
+  37          void delay(unsigned int xms)
+  38          {
+  39   1              unsigned int i,j;
+  40   1              for(i=xms;i>0;i--)
+  41   1                      for(j=112;j>0;j--);
+  42   1      }
+  43          
+  44          void in()interrupt 0
+  45          {       
+  46   1          D1=0;
+  47   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     81    ----
+   CONSTANT SIZE    =     16    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1    ----
+C51 COMPILER V8.06   MAIN                                                                  07/27/2017 22:14:36 PAGE 2   
+
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

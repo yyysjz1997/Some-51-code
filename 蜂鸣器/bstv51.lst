@@ -1,0 +1,46 @@
+C51 COMPILER V8.06   BSTV51                                                                04/03/2017 21:14:54 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE BSTV51
+OBJECT MODULE PLACED IN .\bstv51.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE D:\yyy\启明基地\思飞\51单片机\亚博51单片机智能小车v3.0光盘资料A\bstv51.c BR
+                    -OWSE DEBUG OBJECTEXTEND PRINT(.\bstv51.lst) OBJECT(.\bstv51.obj)
+
+line level    source
+
+   1          /*********************************************************************
+   2           *
+   3           *                         bstv51.c
+   4           *
+   5           *********************************************************************
+   6           * 描    述: BST-V51开发板初始化
+   7           * 开发平台: BST-V51开发板+KEIL C51
+   8           ********************************************************************/
+   9          
+  10          #include <reg52.h>/*包含51系统头文件*/
+  11          #include "bstv51.h"/*包含BST-V51开发板头文件*/
+  12          
+  13          /*BST-V51主板初始化函数*/
+  14          void bstv51_init(void)
+  15          {
+  16   1              /* 引脚方向、输出初值定义 */
+  17   1              FM=1;/*蜂鸣器*/
+  18   1              EN=0;/*让LCD1602数据口处于输入状态，相当于LCD1602使不能，让其释放数据总线*/
+  19   1              CS=1;/*TF卡使不能*/
+  20   1              RST=0;/*ds1302使不能*/
+  21   1      }
+  22          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =      9    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

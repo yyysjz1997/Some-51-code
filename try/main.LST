@@ -1,0 +1,228 @@
+C51 COMPILER V8.06   MAIN                                                                  08/08/2017 13:13:50 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #include <intrins.h>
+   3          #define uchar unsigned char
+   4          #define uint unsigned int
+   5          sbit DU=P2^6;
+   6          sbit WE=P2^7;
+   7          uchar code table[]={
+   8          0x3f,0x06,0x5b,0x4f,
+   9          0x66,0x6d,0x7d,0x07,
+  10          0x7f,0x6f,0x77,0x7c,
+  11          0x39,0x5e,0x79,0x71,
+  12          0x76,0x79,0x38,0x3f,0};
+  13          uchar temp,aa,bb,cc,bai,shi,ge,t0,t1,flag,flag1;
+  14          uint shu;
+  15          void delay(uint z);
+  16          void init();
+  17          void display(uchar aa,uchar bb, uchar cc, uchar bai, uchar shi, uchar ge);
+  18          
+  19          void main()
+  20          {
+  21   1              init();
+  22   1              while(1)
+  23   1              {
+  24   2                  if(flag1 != 1 )
+  25   2                      {
+  26   3                              display(7, 6, 5, bai ,shi,ge);
+  27   3                      }
+  28   2                      else
+  29   2                      {
+  30   3                              //display( table[16],table[17],table[18],table[18],table[19],table[20]);
+  31   3                              display( 16,17,18,18,19,20);
+  32   3                      }
+  33   2                      
+  34   2              }
+  35   1      }
+  36          
+  37          void time0()interrupt 1                   //控制发光二极管的定时器
+  38          {
+  39   1              TH0 = (65536 - 50000) / 256;
+  40   1              TL0 = (65536 - 50000) % 256;
+  41   1              t0++;
+  42   1              if(flag != 1)
+  43   1              {
+  44   2                 if(t0 ==10)
+  45   2                      {
+  46   3                              t0 = 0;
+  47   3                              temp = _crol_(temp , 1);
+  48   3                              P1 = temp;
+  49   3                      }
+  50   2              }
+  51   1              else
+  52   1          {
+  53   2                      if((t0%4) == 0)
+  54   2                      {
+  55   3                      P1=~P1; 
+C51 COMPILER V8.06   MAIN                                                                  08/08/2017 13:13:50 PAGE 2   
+
+  56   3                      }
+  57   2                      if(t0 == 60)
+  58   2                      {
+  59   3                              flag1 = 1;
+  60   3                              P1 = 0xff;      
+  61   3                              TR0 = 0;                
+  62   3                      }
+  63   2              }
+  64   1              
+  65   1      }
+  66          
+  67          void time1()interrupt  3                          //控制数码管的定时器
+  68          {
+  69   1              TH1 = (65536 - 50000) / 256;
+  70   1              TL1 = (65536 - 50000) % 256;
+  71   1              t1++;
+  72   1              if(t1 == 5)
+  73   1              {
+  74   2                      t1 = 0;
+  75   2                      shu--;
+  76   2                      bai = shu / 100;
+  77   2                      shi = shu % 100 / 10;
+  78   2                      ge = shu % 10;
+  79   2              
+  80   2                      if(shu == 398)
+  81   2                      {
+  82   3                              TR0 = 0;
+  83   3                              TH0 = (65536 - 50000) / 256;
+  84   3                              TL0 = (65536 - 50000) % 256;
+  85   3                              TR0 = 1;
+  86   3                              t0 = 0;
+  87   3                              P1 = 0xff;
+  88   3                              TR1 = 0;
+  89   3                              flag = 1;
+  90   3                      }
+  91   2      
+  92   2      
+  93   2      
+  94   2              }       
+  95   1      }
+  96          
+  97          void init()
+  98          {     
+  99   1          shu = 432;
+ 100   1              flag = 0;
+ 101   1              flag1 = 0;      
+ 102   1              aa = 0;
+ 103   1              bb = 0;
+ 104   1              cc = 0;
+ 105   1              bai = 0;
+ 106   1              shi = 0;
+ 107   1              ge = 0;
+ 108   1              temp = 0;
+ 109   1      
+ 110   1          temp = 0xfe;
+ 111   1              P1 = temp; 
+ 112   1      
+ 113   1              TMOD = 0x11;
+ 114   1              TH0 = (65536 - 50000) / 256;
+ 115   1              TL0 = (65536 - 50000) % 256;
+ 116   1              TH1 = (65536 - 50000) / 256;
+ 117   1              TL1 = (65536 - 50000) % 256;
+C51 COMPILER V8.06   MAIN                                                                  08/08/2017 13:13:50 PAGE 3   
+
+ 118   1              EA = 1;
+ 119   1              ET0 = 1;
+ 120   1              ET1 = 1;
+ 121   1              TR0 = 1;
+ 122   1              TR1 = 1;                
+ 123   1      }
+ 124          
+ 125          void delay(uint z)
+ 126          {
+ 127   1              uint t1,y;
+ 128   1              for(t1=z;t1>0;t1--)
+ 129   1                      for(y=112;y>0;y--);
+ 130   1      }
+ 131          
+ 132          void display(uchar aa,uchar bb, uchar cc, uchar bai, uchar shi, uchar ge)
+ 133          {
+ 134   1          DU = 1;
+ 135   1              P0 = table[aa];
+ 136   1              DU = 0;
+ 137   1              
+ 138   1              P0 = 0x00;   //和教程不同,试试  
+ 139   1      
+ 140   1              WE = 1;
+ 141   1              P0 = 0xfe;
+ 142   1              WE = 0;
+ 143   1              delay(1);
+ 144   1      
+ 145   1              DU = 1;
+ 146   1              P0 = table[bb];
+ 147   1              DU = 0;
+ 148   1              
+ 149   1              P0 = 0xff;   //和教程不同,试试  
+ 150   1      
+ 151   1              WE = 1;
+ 152   1              P0 = 0xfd;
+ 153   1              WE = 0;
+ 154   1              delay(1);
+ 155   1      
+ 156   1              DU = 1;
+ 157   1              P0 = table[cc];
+ 158   1              DU = 0;
+ 159   1              
+ 160   1              P0 = 0xff;   //和教程不同,试试  
+ 161   1      
+ 162   1              WE = 1;
+ 163   1              P0 = 0xfb;
+ 164   1              WE = 0;
+ 165   1              delay(1);
+ 166   1      
+ 167   1              DU = 1;
+ 168   1              P0 = table[bai];
+ 169   1              DU = 0;
+ 170   1              
+ 171   1              P0 = 0xff;   //和教程不同,试试  
+ 172   1      
+ 173   1              WE = 1;
+ 174   1              P0 = 0xf7;
+ 175   1              WE = 0;
+ 176   1              delay(1);
+ 177   1      
+ 178   1              DU = 1;
+ 179   1              P0 = table[shi];
+C51 COMPILER V8.06   MAIN                                                                  08/08/2017 13:13:50 PAGE 4   
+
+ 180   1              DU = 0;
+ 181   1              
+ 182   1              P0 = 0xff;   //和教程不同,试试  
+ 183   1                              
+ 184   1              WE = 1;
+ 185   1              P0 = 0xef;
+ 186   1              WE = 0;
+ 187   1              delay(1);
+ 188   1      
+ 189   1              DU = 1;
+ 190   1              P0 = table[ge];
+ 191   1              DU = 0;
+ 192   1              
+ 193   1              P0 = 0xff;   //和教程不同,试试  
+ 194   1      
+ 195   1              WE = 1;
+ 196   1              P0 = 0xdf;
+ 197   1              WE = 0;
+ 198   1              delay(1);
+ 199   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    499    ----
+   CONSTANT SIZE    =     21    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     13       6
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

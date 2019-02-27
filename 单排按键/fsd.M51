@@ -1,0 +1,139 @@
+BL51 BANKED LINKER/LOCATER V6.05                                                        08/08/2017  00:51:46  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.05, INVOKED BY:
+C:\KEIL\C51\BIN\BL51.EXE main.obj TO fsd RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  main.obj (MAIN)
+  C:\KEIL\C51\LIB\C51S.LIB (?C_STARTUP)
+
+
+LINK MAP OF MODULE:  fsd (MAIN)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0001H     UNIT         ?DT?MAIN
+            IDATA   0009H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+                    0003H     07FDH                  *** GAP ***
+            CODE    0800H     0050H     UNIT         ?PR?MAIN?MAIN
+            CODE    0850H     001EH     UNIT         ?PR?_DELAY?MAIN
+            CODE    086EH     0010H     UNIT         ?CO?MAIN
+            CODE    087EH     000CH     UNIT         ?C_C51STARTUP
+
+
+
+OVERLAY MAP OF MODULE:   fsd (MAIN)
+
+
+SEGMENT
+  +--> CALLED SEGMENT
+---------------------
+?C_C51STARTUP
+  +--> ?PR?MAIN?MAIN
+
+?PR?MAIN?MAIN
+  +--> ?CO?MAIN
+  +--> ?PR?_DELAY?MAIN
+
+
+
+SYMBOL TABLE OF MODULE:  fsd (MAIN)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        MAIN
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0080H         PUBLIC        P0
+  D:0090H         PUBLIC        P1
+  D:00A0H         PUBLIC        P2
+BL51 BANKED LINKER/LOCATER V6.05                                                      08/08/2017  00:51:46  PAGE 2
+
+
+  D:00B0H         PUBLIC        P3
+  C:086EH         PUBLIC        table
+  D:00A8H         PUBLIC        IE
+  C:0850H         PUBLIC        _delay
+  B:00A0H.6       PUBLIC        DU
+  D:00B8H         PUBLIC        IP
+  B:00A0H.7       PUBLIC        WE
+  C:0800H         PUBLIC        main
+  D:0098H         PUBLIC        SCON
+  D:0088H         PUBLIC        TCON
+  B:00B0H.4       PUBLIC        key
+  D:0008H         PUBLIC        num
+  B:0090H.0       PUBLIC        LED
+  D:00C8H         PUBLIC        T2CON
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          MAIN
+  C:0800H         LINE#         16
+  C:0800H         LINE#         17
+  C:0800H         LINE#         18
+  C:0803H         LINE#         19
+  C:0805H         LINE#         20
+  C:0808H         LINE#         21
+  C:080AH         LINE#         23
+  C:080CH         LINE#         24
+  C:0814H         LINE#         25
+  C:0816H         LINE#         27
+  C:0818H         LINE#         28
+  C:0818H         LINE#         29
+  C:0818H         LINE#         30
+  C:081BH         LINE#         31
+  C:081BH         LINE#         32
+  C:0822H         LINE#         33
+  C:0825H         LINE#         34
+  C:0825H         LINE#         35
+  C:0827H         LINE#         36
+  C:0829H         LINE#         37
+  C:082EH         LINE#         38
+  C:082EH         LINE#         39
+  C:0831H         LINE#         40
+  C:0831H         LINE#         41
+  C:0833H         LINE#         42
+  C:083BH         LINE#         43
+  C:083DH         LINE#         44
+  C:083DH         LINE#         45
+  C:0840H         LINE#         46
+  C:0847H         LINE#         47
+  C:084CH         LINE#         48
+  C:084CH         LINE#         50
+  C:084CH         LINE#         51
+  C:084EH         LINE#         52
+  C:084EH         LINE#         53
+  -------         ENDPROC       MAIN
+  -------         PROC          _DELAY
+  D:0006H         SYMBOL        z
+  -------         DO            
+  D:0006H         SYMBOL        x
+  D:0004H         SYMBOL        y
+BL51 BANKED LINKER/LOCATER V6.05                                                      08/08/2017  00:51:46  PAGE 3
+
+
+  -------         ENDDO         
+  C:0850H         LINE#         56
+  C:0850H         LINE#         57
+  C:0850H         LINE#         59
+  C:0859H         LINE#         60
+  C:086DH         LINE#         61
+  -------         ENDPROC       _DELAY
+  -------         ENDMOD        MAIN
+
+******************************************************************************
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 007EH BYTE ( 6%) *
+******************************************************************************
+
+Program Size: data=10.0 xdata=0 code=141
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

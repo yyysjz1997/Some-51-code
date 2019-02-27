@@ -1,0 +1,478 @@
+BL51 BANKED LINKER/LOCATER V6.05                                                        08/13/2017  09:52:37  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.05, INVOKED BY:
+C:\KEIL\C51\BIN\BL51.EXE main.obj TO dsaads RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  main.obj (MAIN)
+  C:\KEIL\C51\LIB\C51S.LIB (?C_STARTUP)
+  C:\KEIL\C51\LIB\C51S.LIB (?C_INIT)
+
+
+LINK MAP OF MODULE:  dsaads (MAIN)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     000CH     UNIT         ?DT?MAIN
+            DATA    0014H     0001H     UNIT         _DATA_GROUP_
+            IDATA   0015H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+                    0003H     07FDH                  *** GAP ***
+            CODE    0800H     00DFH     UNIT         ?PR?REMOTE_CONTROL?MAIN
+            CODE    08DFH     008CH     UNIT         ?C_C51STARTUP
+            CODE    096BH     0061H     UNIT         ?PR?_SEND8BIT?MAIN
+            CODE    09CCH     0022H     UNIT         ?PR?_DELAY?MAIN
+            CODE    09EEH     0013H     UNIT         ?PR?_KHZ_2?MAIN
+            CODE    0A01H     0012H     UNIT         ?PR?SEND1_A?MAIN
+            CODE    0A13H     0010H     UNIT         ?PR?XUEXIBAN_3?MAIN
+            CODE    0A23H     0010H     UNIT         ?PR?XUEXIBAN_4?MAIN
+            CODE    0A33H     0010H     UNIT         ?PR?XUEXIBAN_5?MAIN
+            CODE    0A43H     0010H     UNIT         ?PR?XUEXIBAN_6?MAIN
+            CODE    0A53H     0010H     UNIT         ?PR?XUEXIBAN_7?MAIN
+            CODE    0A63H     0010H     UNIT         ?PR?XUEXIBAN_8?MAIN
+            CODE    0A73H     0010H     UNIT         ?PR?XUEXIBAN_9?MAIN
+            CODE    0A83H     000FH     UNIT         ?C_INITSEG
+            CODE    0A92H     000EH     UNIT         ?PR?DELAY560US?MAIN
+            CODE    0AA0H     000EH     UNIT         ?PR?DELAY4500US?MAIN
+            CODE    0AAEH     000DH     UNIT         ?PR?USERCODE_XUEXIBAN?MAIN
+            CODE    0ABBH     000DH     UNIT         ?PR?XUEXIBAN_1?MAIN
+            CODE    0AC8H     000DH     UNIT         ?PR?XUEXIBAN_2?MAIN
+            CODE    0AD5H     000CH     UNIT         ?PR?SEND0_A?MAIN
+            CODE    0AE1H     000CH     UNIT         ?PR?LEADCODE_A?MAIN
+            CODE    0AEDH     0005H     UNIT         ?PR?MAIN?MAIN
+
+
+
+OVERLAY MAP OF MODULE:   dsaads (MAIN)
+
+
+SEGMENT                              DATA_GROUP 
+  +--> CALLED SEGMENT              START    LENGTH
+BL51 BANKED LINKER/LOCATER V6.05                                                      08/13/2017  09:52:37  PAGE 2
+
+
+--------------------------------------------------
+?C_C51STARTUP                      -----    -----
+  +--> ?PR?MAIN?MAIN
+  +--> ?C_INITSEG
+
+?PR?MAIN?MAIN                      -----    -----
+  +--> ?PR?REMOTE_CONTROL?MAIN
+
+?PR?REMOTE_CONTROL?MAIN            0014H    0001H
+  +--> ?PR?_DELAY?MAIN
+  +--> ?PR?XUEXIBAN_1?MAIN
+  +--> ?PR?XUEXIBAN_2?MAIN
+  +--> ?PR?XUEXIBAN_3?MAIN
+  +--> ?PR?XUEXIBAN_4?MAIN
+  +--> ?PR?XUEXIBAN_5?MAIN
+  +--> ?PR?XUEXIBAN_6?MAIN
+  +--> ?PR?XUEXIBAN_7?MAIN
+  +--> ?PR?XUEXIBAN_8?MAIN
+  +--> ?PR?XUEXIBAN_9?MAIN
+
+?PR?XUEXIBAN_1?MAIN                -----    -----
+  +--> ?PR?USERCODE_XUEXIBAN?MAIN
+  +--> ?PR?_SEND8BIT?MAIN
+
+?PR?USERCODE_XUEXIBAN?MAIN         -----    -----
+  +--> ?PR?LEADCODE_A?MAIN
+  +--> ?PR?_SEND8BIT?MAIN
+
+?PR?LEADCODE_A?MAIN                -----    -----
+  +--> ?PR?_KHZ_2?MAIN
+  +--> ?PR?DELAY4500US?MAIN
+
+?PR?_SEND8BIT?MAIN                 -----    -----
+  +--> ?PR?SEND1_A?MAIN
+  +--> ?PR?SEND0_A?MAIN
+
+?PR?SEND1_A?MAIN                   -----    -----
+  +--> ?PR?_KHZ_2?MAIN
+  +--> ?PR?DELAY560US?MAIN
+
+?PR?SEND0_A?MAIN                   -----    -----
+  +--> ?PR?_KHZ_2?MAIN
+  +--> ?PR?DELAY560US?MAIN
+
+?PR?XUEXIBAN_2?MAIN                -----    -----
+  +--> ?PR?USERCODE_XUEXIBAN?MAIN
+  +--> ?PR?_SEND8BIT?MAIN
+
+?PR?XUEXIBAN_3?MAIN                -----    -----
+  +--> ?PR?LEADCODE_A?MAIN
+  +--> ?PR?USERCODE_XUEXIBAN?MAIN
+  +--> ?PR?_SEND8BIT?MAIN
+
+?PR?XUEXIBAN_4?MAIN                -----    -----
+  +--> ?PR?LEADCODE_A?MAIN
+  +--> ?PR?USERCODE_XUEXIBAN?MAIN
+  +--> ?PR?_SEND8BIT?MAIN
+BL51 BANKED LINKER/LOCATER V6.05                                                      08/13/2017  09:52:37  PAGE 3
+
+
+
+?PR?XUEXIBAN_5?MAIN                -----    -----
+  +--> ?PR?LEADCODE_A?MAIN
+  +--> ?PR?USERCODE_XUEXIBAN?MAIN
+  +--> ?PR?_SEND8BIT?MAIN
+
+?PR?XUEXIBAN_6?MAIN                -----    -----
+  +--> ?PR?LEADCODE_A?MAIN
+  +--> ?PR?USERCODE_XUEXIBAN?MAIN
+  +--> ?PR?_SEND8BIT?MAIN
+
+?PR?XUEXIBAN_7?MAIN                -----    -----
+  +--> ?PR?LEADCODE_A?MAIN
+  +--> ?PR?USERCODE_XUEXIBAN?MAIN
+  +--> ?PR?_SEND8BIT?MAIN
+
+?PR?XUEXIBAN_8?MAIN                -----    -----
+  +--> ?PR?LEADCODE_A?MAIN
+  +--> ?PR?USERCODE_XUEXIBAN?MAIN
+  +--> ?PR?_SEND8BIT?MAIN
+
+?PR?XUEXIBAN_9?MAIN                -----    -----
+  +--> ?PR?LEADCODE_A?MAIN
+  +--> ?PR?USERCODE_XUEXIBAN?MAIN
+  +--> ?PR?_SEND8BIT?MAIN
+
+
+
+SYMBOL TABLE OF MODULE:  dsaads (MAIN)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        MAIN
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  C:0A33H         PUBLIC        xuexiban_5
+  C:0A43H         PUBLIC        xuexiban_6
+  C:0A53H         PUBLIC        xuexiban_7
+  D:0090H         PUBLIC        P1
+  C:0A63H         PUBLIC        xuexiban_8
+  C:0A73H         PUBLIC        xuexiban_9
+  D:00B0H         PUBLIC        P3
+  D:00A8H         PUBLIC        IE
+  C:09D0H         PUBLIC        _delay
+  C:0A92H         PUBLIC        delay560us
+  D:00B8H         PUBLIC        IP
+  C:0AD5H         PUBLIC        send0_a
+  C:0A01H         PUBLIC        send1_a
+  C:0AEDH         PUBLIC        main
+  C:0AB1H         PUBLIC        usercode_xuexiban
+  D:0098H         PUBLIC        SCON
+  D:0088H         PUBLIC        TCON
+  C:0AA0H         PUBLIC        delay4500us
+  C:0800H         PUBLIC        Remote_control
+  B:0090H.5       PUBLIC        out
+  D:0008H         PUBLIC        TabHL1
+  C:09EEH         PUBLIC        _khz_2
+BL51 BANKED LINKER/LOCATER V6.05                                                      08/13/2017  09:52:37  PAGE 4
+
+
+  C:096BH         PUBLIC        _Send8Bit
+  D:00C8H         PUBLIC        T2CON
+  C:0AE1H         PUBLIC        leadcode_a
+  C:0ABBH         PUBLIC        xuexiban_1
+  D:00D0H         PUBLIC        PSW
+  C:0AC8H         PUBLIC        xuexiban_2
+  C:0A13H         PUBLIC        xuexiban_3
+  C:0A23H         PUBLIC        xuexiban_4
+  C:09CCH         SYMBOL        L?0088
+  -------         PROC          L?0087
+  -------         ENDPROC       L?0087
+  C:09CCH         SYMBOL        L?0088
+  -------         PROC          _DELAY
+  D:0006H         SYMBOL        xms
+  -------         DO            
+  D:0006H         SYMBOL        i
+  D:0004H         SYMBOL        j
+  -------         ENDDO         
+  C:09D0H         LINE#         7
+  C:09D0H         LINE#         8
+  C:09D0H         LINE#         10
+  C:09D9H         LINE#         11
+  C:09EDH         LINE#         12
+  -------         ENDPROC       _DELAY
+  -------         PROC          DELAY560US
+  -------         DO            
+  D:0006H         SYMBOL        j
+  -------         ENDDO         
+  C:0A92H         LINE#         14
+  C:0A92H         LINE#         15
+  C:0A92H         LINE#         17
+  C:0A9FH         LINE#         18
+  -------         ENDPROC       DELAY560US
+  -------         PROC          DELAY4500US
+  -------         DO            
+  D:0006H         SYMBOL        j
+  -------         ENDDO         
+  C:0AA0H         LINE#         20
+  C:0AA0H         LINE#         21
+  C:0AA0H         LINE#         23
+  C:0AADH         LINE#         24
+  -------         ENDPROC       DELAY4500US
+  -------         PROC          _KHZ_2
+  D:0006H         SYMBOL        num
+  C:09EEH         LINE#         26
+  C:09EEH         LINE#         27
+  C:09EEH         LINE#         28
+  C:09F7H         LINE#         29
+  C:09F7H         LINE#         31
+  C:09F9H         LINE#         32
+  C:0A00H         LINE#         33
+  -------         ENDPROC       _KHZ_2
+  -------         PROC          SEND0_A
+  C:0AD5H         LINE#         35
+  C:0AD5H         LINE#         36
+  C:0AD5H         LINE#         37
+  C:0ADCH         LINE#         39
+BL51 BANKED LINKER/LOCATER V6.05                                                      08/13/2017  09:52:37  PAGE 5
+
+
+  C:0ADEH         LINE#         40
+  -------         ENDPROC       SEND0_A
+  -------         PROC          SEND1_A
+  C:0A01H         LINE#         43
+  C:0A01H         LINE#         44
+  C:0A01H         LINE#         45
+  C:0A08H         LINE#         47
+  C:0A0AH         LINE#         48
+  C:0A0DH         LINE#         49
+  C:0A10H         LINE#         50
+  -------         ENDPROC       SEND1_A
+  -------         PROC          LEADCODE_A
+  C:0AE1H         LINE#         53
+  C:0AE1H         LINE#         54
+  C:0AE1H         LINE#         55
+  C:0AE8H         LINE#         57
+  C:0AEAH         LINE#         58
+  -------         ENDPROC       LEADCODE_A
+  -------         PROC          _SEND8BIT
+  D:0005H         SYMBOL        d
+  C:096BH         LINE#         64
+  C:096DH         LINE#         65
+  C:096DH         LINE#         66
+  C:0976H         LINE#         67
+  C:0979H         LINE#         68
+  C:0982H         LINE#         69
+  C:0985H         LINE#         70
+  C:098EH         LINE#         71
+  C:0991H         LINE#         72
+  C:099AH         LINE#         73
+  C:099DH         LINE#         74
+  C:09A6H         LINE#         75
+  C:09A9H         LINE#         76
+  C:09B2H         LINE#         77
+  C:09B5H         LINE#         78
+  C:09BEH         LINE#         79
+  C:09C1H         LINE#         80
+  C:09C8H         LINE#         81
+  C:09CBH         LINE#         83
+  -------         ENDPROC       _SEND8BIT
+  -------         PROC          L?0086
+  -------         ENDPROC       L?0086
+  -------         PROC          USERCODE_XUEXIBAN
+  C:0AB1H         LINE#         86
+  C:0AB1H         LINE#         87
+  C:0AB1H         LINE#         88
+  C:0AB6H         LINE#         89
+  -------         ENDPROC       USERCODE_XUEXIBAN
+  -------         PROC          XUEXIBAN_1
+  C:0ABBH         LINE#         92
+  C:0ABBH         LINE#         93
+  C:0ABBH         LINE#         94
+  C:0ABBH         LINE#         95
+  C:0ABEH         LINE#         96
+  C:0AC3H         LINE#         97
+  -------         ENDPROC       XUEXIBAN_1
+  -------         PROC          XUEXIBAN_2
+BL51 BANKED LINKER/LOCATER V6.05                                                      08/13/2017  09:52:37  PAGE 6
+
+
+  C:0AC8H         LINE#         100
+  C:0AC8H         LINE#         101
+  C:0AC8H         LINE#         102
+  C:0AC8H         LINE#         103
+  C:0ACBH         LINE#         104
+  C:0AD0H         LINE#         105
+  -------         ENDPROC       XUEXIBAN_2
+  -------         PROC          XUEXIBAN_3
+  C:0A13H         LINE#         108
+  C:0A13H         LINE#         109
+  C:0A13H         LINE#         110
+  C:0A16H         LINE#         111
+  C:0A19H         LINE#         112
+  C:0A1EH         LINE#         113
+  -------         ENDPROC       XUEXIBAN_3
+  -------         PROC          XUEXIBAN_4
+  C:0A23H         LINE#         116
+  C:0A23H         LINE#         117
+  C:0A23H         LINE#         118
+  C:0A26H         LINE#         119
+  C:0A29H         LINE#         120
+  C:0A2EH         LINE#         121
+  -------         ENDPROC       XUEXIBAN_4
+  -------         PROC          XUEXIBAN_5
+  C:0A33H         LINE#         124
+  C:0A33H         LINE#         125
+  C:0A33H         LINE#         126
+  C:0A36H         LINE#         127
+  C:0A39H         LINE#         128
+  C:0A3EH         LINE#         129
+  -------         ENDPROC       XUEXIBAN_5
+  -------         PROC          XUEXIBAN_6
+  C:0A43H         LINE#         132
+  C:0A43H         LINE#         133
+  C:0A43H         LINE#         134
+  C:0A46H         LINE#         135
+  C:0A49H         LINE#         136
+  C:0A4EH         LINE#         137
+  -------         ENDPROC       XUEXIBAN_6
+  -------         PROC          XUEXIBAN_7
+  C:0A53H         LINE#         140
+  C:0A53H         LINE#         141
+  C:0A53H         LINE#         142
+  C:0A56H         LINE#         143
+  C:0A59H         LINE#         144
+  C:0A5EH         LINE#         145
+  -------         ENDPROC       XUEXIBAN_7
+  -------         PROC          XUEXIBAN_8
+  C:0A63H         LINE#         148
+  C:0A63H         LINE#         149
+  C:0A63H         LINE#         150
+  C:0A66H         LINE#         151
+  C:0A69H         LINE#         152
+  C:0A6EH         LINE#         153
+  -------         ENDPROC       XUEXIBAN_8
+  -------         PROC          XUEXIBAN_9
+  C:0A73H         LINE#         156
+BL51 BANKED LINKER/LOCATER V6.05                                                      08/13/2017  09:52:37  PAGE 7
+
+
+  C:0A73H         LINE#         157
+  C:0A73H         LINE#         158
+  C:0A76H         LINE#         159
+  C:0A79H         LINE#         160
+  C:0A7EH         LINE#         161
+  -------         ENDPROC       XUEXIBAN_9
+  -------         PROC          REMOTE_CONTROL
+  -------         DO            
+  D:0014H         SYMBOL        temp
+  -------         ENDDO         
+  C:0800H         LINE#         164
+  C:0800H         LINE#         165
+  C:0800H         LINE#         167
+  C:0803H         LINE#         168
+  C:0806H         LINE#         169
+  C:0809H         LINE#         170
+  C:080FH         LINE#         171
+  C:080FH         LINE#         172
+  C:0812H         LINE#         173
+  C:0815H         LINE#         174
+  C:0818H         LINE#         175
+  C:081EH         LINE#         176
+  C:081EH         LINE#         177
+  C:0821H         LINE#         178
+  C:0833H         LINE#         179
+  C:0833H         LINE#         180
+  C:0836H         LINE#         181
+  C:0838H         LINE#         182
+  C:083BH         LINE#         183
+  C:083DH         LINE#         184
+  C:0840H         LINE#         185
+  C:0842H         LINE#         186
+  C:0845H         LINE#         187
+  C:0845H         LINE#         188
+  C:0845H         LINE#         189
+  C:084BH         LINE#         190
+  C:084BH         LINE#         191
+  C:084EH         LINE#         192
+  C:0851H         LINE#         193
+  C:0853H         LINE#         194
+  C:0853H         LINE#         195
+  C:0853H         LINE#         197
+  C:0856H         LINE#         198
+  C:0859H         LINE#         199
+  C:085CH         LINE#         200
+  C:0862H         LINE#         201
+  C:0862H         LINE#         202
+  C:0865H         LINE#         203
+  C:0868H         LINE#         204
+  C:086BH         LINE#         205
+  C:0871H         LINE#         206
+  C:0871H         LINE#         207
+  C:0874H         LINE#         208
+  C:0886H         LINE#         209
+  C:0886H         LINE#         210
+  C:0889H         LINE#         211
+  C:088BH         LINE#         212
+BL51 BANKED LINKER/LOCATER V6.05                                                      08/13/2017  09:52:37  PAGE 8
+
+
+  C:088EH         LINE#         213
+  C:0890H         LINE#         214
+  C:0893H         LINE#         215
+  C:0895H         LINE#         216
+  C:0898H         LINE#         217
+  C:0898H         LINE#         218
+  C:0898H         LINE#         219
+  C:089EH         LINE#         220
+  C:089EH         LINE#         221
+  C:08A1H         LINE#         222
+  C:08A4H         LINE#         223
+  C:08A6H         LINE#         224
+  C:08A6H         LINE#         225
+  C:08A6H         LINE#         227
+  C:08A9H         LINE#         228
+  C:08ACH         LINE#         229
+  C:08AFH         LINE#         230
+  C:08B5H         LINE#         231
+  C:08B5H         LINE#         232
+  C:08B8H         LINE#         233
+  C:08BBH         LINE#         234
+  C:08BEH         LINE#         235
+  C:08C4H         LINE#         236
+  C:08C4H         LINE#         237
+  C:08C7H         LINE#         238
+  C:08CDH         LINE#         239
+  C:08CDH         LINE#         240
+  C:08D0H         LINE#         241
+  C:08D0H         LINE#         242
+  C:08D0H         LINE#         243
+  C:08D6H         LINE#         244
+  C:08D6H         LINE#         245
+  C:08D9H         LINE#         246
+  C:08DCH         LINE#         247
+  C:08DEH         LINE#         248
+  C:08DEH         LINE#         249
+  C:08DEH         LINE#         250
+  -------         ENDPROC       REMOTE_CONTROL
+  -------         PROC          MAIN
+  C:0AEDH         LINE#         252
+  C:0AEDH         LINE#         253
+  C:0AEDH         LINE#         254
+  C:0AEDH         LINE#         255
+  C:0AEDH         LINE#         256
+  C:0AF0H         LINE#         257
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        MAIN
+
+******************************************************************************
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 0265H BYTE (29%) *
+******************************************************************************
+
+Program Size: data=22.0 xdata=0 code=757
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

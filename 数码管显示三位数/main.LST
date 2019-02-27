@@ -1,0 +1,129 @@
+C51 COMPILER V8.06   MAIN                                                                  08/06/2017 23:57:00 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #define uint unsigned int
+   3          #define uchar unsigned char
+   4          
+   5          uchar temp,aa,bai,shi,ge;
+   6          
+   7          sbit DU=P2^6;
+   8          sbit WE=P2^7;
+   9          
+  10          uchar code table[]={
+  11          0x3f,0x06,0x5b,0x4f,
+  12          0x66,0x6d,0x7d,0x07,
+  13          0x7f,0x6f,0x77,0x7c,
+  14          0x39,0x5e,0x79,0x71};
+  15          
+  16          void delay(uint z);
+  17          void init();
+  18          void display(uchar bai,uchar shi,uchar ge);
+  19          
+  20          void main()
+  21          {       
+  22   1              init();
+  23   1              while(1)
+  24   1              {
+  25   2                      if(aa==10)
+  26   2                        {
+  27   3                              aa=0;
+  28   3                              temp++;
+  29   3                              if(temp==255)
+  30   3                                 {
+  31   4                                              temp=0;
+  32   4                                 }
+  33   3                              bai=temp/100;
+  34   3                              shi=temp%100/10;
+  35   3                              ge=temp%10;
+  36   3                        }
+  37   2                      display(bai,shi,ge);
+  38   2              }
+  39   1      }
+  40          
+  41          
+  42          void delay(uint z)
+  43          {
+  44   1              uint x,y;
+  45   1              for(x=z;x>0;x--)
+  46   1                      for(y=112;y>0;y--);
+  47   1      }
+  48          
+  49          void init()
+  50          {       
+  51   1              WE=0;
+  52   1              DU=0;
+  53   1      
+  54   1              temp=0;
+  55   1              aa=0;
+C51 COMPILER V8.06   MAIN                                                                  08/06/2017 23:57:00 PAGE 2   
+
+  56   1              bai=0;
+  57   1              shi=0;
+  58   1              ge=0;
+  59   1      
+  60   1              TMOD=0x01;
+  61   1              TH0=(65536-50000)/256;
+  62   1              TL0=(65536-50000)%256;
+  63   1              EA=1;
+  64   1              ET0=1;
+  65   1              TR0=1;  
+  66   1      }
+  67          
+  68          
+  69          void display(uchar bai,uchar shi,uchar ge)
+  70          {
+  71   1                  DU=1;
+  72   1                      P0=table[bai];
+  73   1                      DU=0;
+  74   1                      P0=0xff;
+  75   1                      WE=1;
+  76   1                      P0=0xfe;
+  77   1                      WE=0;
+  78   1                      delay(1);
+  79   1      
+  80   1                      DU=1;
+  81   1                      P0=table[shi];
+  82   1                      DU=0;
+  83   1                      P0=0xff;
+  84   1                      WE=1;
+  85   1                      P0=0xfd;
+  86   1                      WE=0;
+  87   1                      delay(1);
+  88   1      
+  89   1                      DU=1;
+  90   1                      P0=table[ge];
+  91   1                      DU=0;
+  92   1                      P0=0xff;
+  93   1                      WE=1;
+  94   1                      P0=0xfb;
+  95   1                      WE=0;
+  96   1                      delay(1);
+  97   1      }
+  98            
+  99          void time0() interrupt 1
+ 100          {
+ 101   1          TH0=(65536-50000)/256;
+ 102   1              TL0=(65536-50000)%256;
+ 103   1              aa++;
+ 104   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    207    ----
+   CONSTANT SIZE    =     16    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      5    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

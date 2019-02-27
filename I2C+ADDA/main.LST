@@ -1,0 +1,197 @@
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 17:12:59 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include<reg51.h>
+   2          #include<intrins.h>
+   3          
+   4          #define uchar unsigned char
+   5          #define uint unsigned int 
+   6          #define Write_PCF8591 0x90
+   7          #define Read_PCF8591 0x91
+   8          #define Control_Byte 0x80         //0xf0为实验板上的L3亮
+   9          #define LED P1
+  10          
+  11          sbit SCL=P2^1;
+  12          sbit SDA=P2^0;
+  13          
+  14          uchar num,temp;
+  15          
+  16          void delayms(uint z)
+  17          {
+  18   1          uint x,y;
+  19   1          for(x=0;x<z;x++)
+  20   1              for(y=0;y<112;y++);
+  21   1      }
+  22          
+  23          void delay()
+  24          {
+  25   1          _nop_();_nop_();
+  26   1          _nop_();_nop_();
+  27   1          _nop_();_nop_();
+  28   1          _nop_();_nop_();
+  29   1      }
+  30          
+  31          void init_IIC()
+  32          {
+  33   1          SDA=1;
+  34   1          delay();
+  35   1          SCL=1;
+  36   1          delay();
+  37   1      }
+  38          
+  39          void start()
+  40          {
+  41   1          SDA=1;
+  42   1          delay();
+  43   1          SCL=1;
+  44   1          delay();
+  45   1          SDA=0;
+  46   1          delay();
+  47   1      }
+  48          
+  49          void stop()
+  50          {
+  51   1          SDA=0;
+  52   1          delay();
+  53   1          SCL=1;
+  54   1          delay();
+  55   1          SDA=1;
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 17:12:59 PAGE 2   
+
+  56   1          delay();
+  57   1      }
+  58          
+  59          void ack()   //应答
+  60          {
+  61   1          uchar i=0;
+  62   1          SCL=1;
+  63   1          delay();
+  64   1          while((SDA==1)&&(i<250)) i++;
+  65   1          SCL=0;
+  66   1          delay();
+  67   1      }
+  68          
+  69          void noack()  //非应答
+  70          {
+  71   1          SDA=1;
+  72   1          delay();
+  73   1          SCL=1;
+  74   1          delay();
+  75   1          SCL=0;
+  76   1          delay();
+  77   1      }
+  78          
+  79          void Write_Byte(uchar dat)
+  80          {
+  81   1          uchar i;
+  82   1          for(i=0;i<8;i++)
+  83   1          {
+  84   2              SCL=0;
+  85   2              delay();
+  86   2              if(dat&0x80)
+  87   2              {
+  88   3                  SDA=1;
+  89   3              }
+  90   2              else
+  91   2              {
+  92   3                  SDA=0;
+  93   3              }
+  94   2              dat=dat<<1;
+  95   2              SCL=1;
+  96   2              delay();
+  97   2          }
+  98   1          SCL=0;
+  99   1          delay();
+ 100   1          SDA=1;
+ 101   1          delay();    
+ 102   1      }
+ 103          
+ 104          uchar Read_Byte()
+ 105          {
+ 106   1          uchar i,dat;
+ 107   1          SCL=0;
+ 108   1          delay();
+ 109   1          SDA=1;
+ 110   1          delay();
+ 111   1          for(i=0;i<8;i++)
+ 112   1          {
+ 113   2              SCL=1;
+ 114   2              delay();
+ 115   2              dat=dat<<1;
+ 116   2              if(SDA)
+ 117   2              {
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 17:12:59 PAGE 3   
+
+ 118   3                  dat++;
+ 119   3              }
+ 120   2              SCL=0;
+ 121   2              delay();
+ 122   2          }
+ 123   1          return dat;
+ 124   1      }
+ 125          
+ 126          void DAC_PCF8591(uchar add,uchar dat)
+ 127          {
+ 128   1          start();
+ 129   1          Write_Byte(add);
+ 130   1          ack();
+ 131   1          Write_Byte(Control_Byte);
+ 132   1          ack();
+ 133   1          Write_Byte(dat);
+ 134   1          ack();
+ 135   1          stop();
+ 136   1      }
+ 137          
+ 138          uchar ADC_Read(uchar add0,uchar add1,uchar chl)         //chl=0，则重复一遍停止；chl=1，则循环
+ 139          {
+ 140   1          uchar dat;
+ 141   1          start();
+ 142   1          Write_Byte(add0);
+ 143   1          ack();
+ 144   1          Write_Byte(Control_Byte|chl);
+ 145   1          ack();
+ 146   1          start();
+ 147   1          Write_Byte(add1);
+ 148   1          ack();
+ 149   1          dat=Read_Byte();
+ 150   1          noack();
+ 151   1          stop();
+ 152   1          return dat;
+ 153   1      }
+ 154          
+ 155          void main()
+ 156          {
+ 157   1          temp = 0;
+ 158   1          num = 0;
+ 159   1          init_IIC();
+ 160   1          while(1)
+ 161   1          {
+ 162   2              DAC_PCF8591(Write_PCF8591,num);
+ 163   2              num++;
+ 164   2              delayms(500);
+ 165   2              temp=ADC_Read(Write_PCF8591,Read_PCF8591,1);
+ 166   2              LED=temp;
+ 167   2          }
+ 168   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    287    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 17:12:59 PAGE 4   
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

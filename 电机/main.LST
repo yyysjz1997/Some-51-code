@@ -1,0 +1,134 @@
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 17:34:10 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #define uint unsigned int
+   3          #define uchar unsigned char
+   4          sbit WE = P2^7;
+   5          sbit DU = P2^6;
+   6          sbit D1 = P1^3;
+   7          sbit K1 = P3^4;
+   8          sbit K2 = P3^5;
+   9          unsigned char code table[10]={0x3f,0x06,0x5b,0x4f,
+  10          0x66,0x6d,0x7d,0x07,0x7f,0x6f};// 显示段码值0~9
+  11          
+  12          uchar speed;
+  13          uchar ge,shi,num;
+  14          
+  15          void delay(uint z)
+  16          {
+  17   1          uint x,y;
+  18   1          for(x = z;x > 0;x--)
+  19   1              for(y = 112;y > 0;y--);
+  20   1      }
+  21          
+  22          void display(uchar speed2)
+  23          {   
+  24   1          shi = speed2/10;
+  25   1          ge = speed2%10;
+  26   1      
+  27   1          P0 = table[ge];
+  28   1          DU = 1;
+  29   1          DU = 0;
+  30   1          P0 = 0xfd;
+  31   1          WE = 1;
+  32   1          WE = 0;
+  33   1          delay(5);
+  34   1      
+  35   1          P0 = table[shi];
+  36   1          DU = 1;
+  37   1          DU = 0;
+  38   1          P0 = 0xfe;
+  39   1          WE = 1;
+  40   1          WE = 0;
+  41   1          delay(5);
+  42   1      }
+  43          
+  44          void init()
+  45          {
+  46   1          WE = 0;
+  47   1          DU = 0;
+  48   1          EA = 1;
+  49   1          TMOD = 0x01;
+  50   1          ET0 = 1;
+  51   1          TR0 = 1;   
+  52   1      }
+  53          
+  54          void main()
+  55          {
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 17:34:10 PAGE 2   
+
+  56   1          init();
+  57   1          speed = 1;
+  58   1          while(1)
+  59   1          {      
+  60   2                  display(speed);
+  61   2              if(K1 == 0)
+  62   2              {
+  63   3                  delay(5);
+  64   3                  if(K1 == 0)
+  65   3                  {
+  66   4                      while(!K1);//等松手
+  67   4                      if(speed<18)
+  68   4                      {
+  69   5                          speed++;                    
+  70   5                      }
+  71   4                  }
+  72   3              }
+  73   2              else if(K2 == 0)
+  74   2              {
+  75   3                  delay(5);
+  76   3                  if(K2 == 0)
+  77   3                  {
+  78   4                      while(!K2);
+  79   4                      if(speed>1)
+  80   4                      {
+  81   5                          speed--;
+  82   5                      }
+  83   4                  }
+  84   3              }
+  85   2          }
+  86   1      } 
+  87          
+  88          void time0()interrupt 1
+  89          {  
+  90   1          static uchar time;
+  91   1          TH0 = (65536 - 1000)/256;
+  92   1          TL0 = (65536 - 1000)%256;  
+  93   1              if(time > speed)
+  94   1              {
+  95   2                      D1 = 0;
+  96   2              }
+  97   1              else
+  98   1              {
+  99   2                      D1 = 1;
+ 100   2              }
+ 101   1              time++;
+ 102   1              if(time == 19)
+ 103   1              {
+ 104   2                      time = 0;
+ 105   2              }
+ 106   1                     
+ 107   1      } 
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    203    ----
+   CONSTANT SIZE    =     10    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      5    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 17:34:10 PAGE 3   
+
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,430 @@
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 15:46:48 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          
+   2          //  实验效果：在1602液晶屏上显示各通道的电压值
+   3          #include<reg52.h>    //包含单片机寄存器的头文件
+   4          #include <intrins.h> 
+   5          
+   6          #define  AddWr 0x90    //PCF8591 地址
+   7          
+   8          // 变量定义
+   9          unsigned char AD_CHANNEL;
+  10          sbit RST=P2^4;   //时钟 加上后可以关掉DS1302芯片输出
+  11          sbit scl=P2^1;       //I2C  时钟 
+  12          sbit sda=P2^0;       //I2C  数据 
+  13          bit ack;                 /*应答标志位*/
+  14          
+  15          sbit RS = P1^0;//Pin4
+  16          sbit RW = P1^1; //Pin5
+  17          sbit E  = P2^5;//Pin6
+  18          
+  19          
+  20          #define Data  P0    //数据端口
+  21          
+  22          unsigned char TempData[8];
+  23          unsigned char  SecondLine[]="                ";
+  24          unsigned char  FirstLine[] ="                ";
+  25          /*******************************************************************
+  26                               起动总线函数               
+  27          函数原型: void  Start_I2c();  
+  28          功能:     启动I2C总线,即发送I2C起始条件.  
+  29          ********************************************************************/
+  30          void Start_I2c()
+  31          {
+  32   1        sda=1;         /*发送起始条件的数据信号*/
+  33   1        _nop_();
+  34   1        scl=1;
+  35   1        _nop_();        /*起始条件建立时间大于4.7us,延时*/
+  36   1        _nop_();
+  37   1        _nop_();
+  38   1        _nop_();
+  39   1        _nop_();    
+  40   1        sda=0;         /*发送起始信号*/
+  41   1        _nop_();        /* 起始条件锁定时间大于4μs*/
+  42   1        _nop_();
+  43   1        _nop_();
+  44   1        _nop_();
+  45   1        _nop_();       
+  46   1        scl=0;       /*钳住I2C总线，准备发送或接收数据 */
+  47   1        _nop_();
+  48   1        _nop_();
+  49   1      }
+  50          
+  51          /*******************************************************************
+  52                                结束总线函数               
+  53          函数原型: void  Stop_I2c();  
+  54          功能:     结束I2C总线,即发送I2C结束条件.  
+  55          ********************************************************************/
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 15:46:48 PAGE 2   
+
+  56          void Stop_I2c()
+  57          {
+  58   1        sda=0;      /*发送结束条件的数据信号*/
+  59   1        _nop_();       /*发送结束条件的时钟信号*/
+  60   1        scl=1;      /*结束条件建立时间大于4μs*/
+  61   1        _nop_();
+  62   1        _nop_();
+  63   1        _nop_();
+  64   1        _nop_();
+  65   1        _nop_();
+  66   1        sda=1;      /*发送I2C总线结束信号*/
+  67   1        _nop_();
+  68   1        _nop_();
+  69   1        _nop_();
+  70   1        _nop_();
+  71   1      }
+  72          
+  73          /*******************************************************************
+  74                           字节数据发送函数               
+  75          函数原型: void  I2C_SendByte(UCHAR c);
+  76          功能:     将数据c发送出去,可以是地址,也可以是数据,发完后等待应答,并对
+  77                    此状态位进行操作.(不应答或非应答都使ack=0)     
+  78                     发送数据正常，ack=1; ack=0表示被控器无应答或损坏。
+  79          ********************************************************************/
+  80          void  I2C_SendByte(unsigned char  c)
+  81          {
+  82   1       unsigned char  i;
+  83   1       
+  84   1       for(i=0;i<8;i++)  /*要传送的数据长度为8位*/
+  85   1          {
+  86   2           if((c<<i)&0x80)sda=1;   /*判断发送位*/
+  87   2             else  sda=0;                
+  88   2           _nop_();
+  89   2           scl=1;               /*置时钟线为高，通知被控器开始接收数据位*/
+  90   2            _nop_(); 
+  91   2            _nop_();             /*保证时钟高电平周期大于4μs*/
+  92   2            _nop_();
+  93   2            _nop_();
+  94   2            _nop_();         
+  95   2           scl=0; 
+  96   2          }
+  97   1          
+  98   1          _nop_();
+  99   1          _nop_();
+ 100   1          sda=1;                /*8位发送完后释放数据线，准备接收应答位*/
+ 101   1          _nop_();
+ 102   1          _nop_();   
+ 103   1          scl=1;
+ 104   1          _nop_();
+ 105   1          _nop_();
+ 106   1          _nop_();
+ 107   1          if(sda==1)ack=0;     
+ 108   1             else ack=1;        /*判断是否接收到应答信号*/
+ 109   1          scl=0;
+ 110   1          _nop_();
+ 111   1          _nop_();
+ 112   1      }
+ 113          
+ 114          /*******************************************************************
+ 115                           字节数据接收函数               
+ 116          函数原型: UCHAR  I2C_RcvByte();
+ 117          功能:        用来接收从器件传来的数据,并判断总线错误(不发应答信号)，
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 15:46:48 PAGE 3   
+
+ 118                    发完后请用应答函数应答从机。  
+ 119          ********************************************************************/    
+ 120          unsigned char   I2C_RcvByte()
+ 121          {
+ 122   1        unsigned char  retc=0,i; 
+ 123   1        sda=1;                     /*置数据线为输入方式*/
+ 124   1        for(i=0;i<8;i++)
+ 125   1            {
+ 126   2              _nop_();           
+ 127   2              scl=0;                  /*置时钟线为低，准备接收数据位*/
+ 128   2              _nop_();
+ 129   2              _nop_();                 /*时钟低电平周期大于4.7μs*/
+ 130   2              _nop_();
+ 131   2              _nop_();
+ 132   2              _nop_();
+ 133   2              scl=1;                  /*置时钟线为高使数据线上数据有效*/
+ 134   2              _nop_();
+ 135   2              _nop_();
+ 136   2              retc=retc<<1;
+ 137   2              if(sda==1)retc=retc+1;  /*读数据位,接收的数据位放入retc中 */
+ 138   2              _nop_();
+ 139   2              _nop_(); 
+ 140   2            }
+ 141   1        scl=0;    
+ 142   1        _nop_();
+ 143   1        _nop_();
+ 144   1        return(retc);
+ 145   1      }
+ 146          
+ 147          /********************************************************************
+ 148                               应答子函数
+ 149          函数原型:  void Ack_I2c(bit a);
+ 150          功能:      主控器进行应答信号(可以是应答或非应答信号，由位参数a决定)
+ 151          ********************************************************************/
+ 152          void Ack_I2c(bit a)
+ 153          {  
+ 154   1        if(a==0)sda=0;              /*在此发出应答或非应答信号 */
+ 155   1        else sda=1;                             /*0为发出应答，1为非应答信号 */
+ 156   1        _nop_();
+ 157   1        _nop_();
+ 158   1        _nop_();      
+ 159   1        scl=1;
+ 160   1        _nop_();
+ 161   1        _nop_();                    /*时钟低电平周期大于4μs*/
+ 162   1        _nop_();
+ 163   1        _nop_();
+ 164   1        _nop_();  
+ 165   1        scl=0;                     /*清时钟线，住I2C总线以便继续接收*/
+ 166   1        _nop_();
+ 167   1        _nop_();    
+ 168   1      }
+ 169          
+ 170          /************************************************************
+ 171          * 函数名        : Pcf8591_DaConversion
+ 172          * 函数功能      : PCF8591的输出端输出模拟量
+ 173          * 输入          : addr（器件地址），channel（转换通道），value（转换的数值）
+ 174          * 输出          : 无
+ 175          ******************* *****************************************/
+ 176          bit Pcf8591_DaConversion(unsigned char addr,unsigned char channel,  unsigned char Val)
+ 177          {
+ 178   1         Start_I2c();              //启动总线
+ 179   1         I2C_SendByte(addr);            //发送器件地址
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 15:46:48 PAGE 4   
+
+ 180   1         if(ack==0)return(0);
+ 181   1         I2C_SendByte(0x40|channel);              //发送控制字节
+ 182   1         if(ack==0)return(0);
+ 183   1         I2C_SendByte(Val);            //发送DAC的数值  
+ 184   1         if(ack==0)return(0);
+ 185   1         Stop_I2c();               //结束总线
+ 186   1         return(1);
+ 187   1      }
+ 188          
+ 189          /************************************************************
+ 190          * 函数名        : Pcf8591_SendByte
+ 191          * 函数功能              : 写入一个控制命令
+ 192          * 输入          : addr（器件地址），channel（转换通道）
+ 193          * 输出          : 无
+ 194          ************************************************************/
+ 195          bit PCF8591_SendByte(unsigned char addr,unsigned char channel)
+ 196          {
+ 197   1         Start_I2c();              //启动总线
+ 198   1         I2C_SendByte(addr);            //发送器件地址
+ 199   1         if(ack==0)return(0);
+ 200   1         I2C_SendByte(0x40|channel);              //发送控制字节
+ 201   1         if(ack==0)return(0);
+ 202   1         Stop_I2c();               //结束总线
+ 203   1         return(1);
+ 204   1      }
+ 205          
+ 206          /************************************************************
+ 207          * 函数名        : PCF8591_RcvByte
+ 208          * 函数功能      : 读取一个转换值
+ 209          * 输入          :
+ 210          * 输出          : dat
+ 211          ************************************************************/
+ 212          unsigned char PCF8591_RcvByte(unsigned char addr)
+ 213          {  
+ 214   1         unsigned char dat;
+ 215   1      
+ 216   1         Start_I2c();          //启动总线
+ 217   1         I2C_SendByte(addr+1);      //发送器件地址
+ 218   1         if(ack==0)return(0);
+ 219   1         dat=I2C_RcvByte();          //读取数据0
+ 220   1      
+ 221   1         Ack_I2c(1);           //发送非应答信号
+ 222   1         Stop_I2c();           //结束总线
+ 223   1         return(dat);
+ 224   1      }
+ 225          
+ 226          /******************************************************************/
+ 227          /*                   1602液晶屏相关函数                                     */
+ 228          /******************************************************************/
+ 229          void DelayUs(unsigned char us)//delay us
+ 230          {
+ 231   1       unsigned char uscnt;
+ 232   1       uscnt=us>>1;/* Crystal frequency in 12MHz*/
+ 233   1       while(--uscnt);
+ 234   1      }
+ 235          /******************************************************************/
+ 236          void DelayMs(unsigned char ms)//delay Ms
+ 237          {
+ 238   1       while(--ms)
+ 239   1         {
+ 240   2           DelayUs(250);
+ 241   2           DelayUs(250);
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 15:46:48 PAGE 5   
+
+ 242   2               DelayUs(250);
+ 243   2               DelayUs(250);
+ 244   2         }
+ 245   1      }
+ 246          void WriteCommand(unsigned char c)
+ 247          {
+ 248   1       DelayMs(5);//short delay before operation
+ 249   1       E=0;
+ 250   1       RS=0;
+ 251   1       RW=0;
+ 252   1       _nop_();
+ 253   1       E=1;
+ 254   1       Data=c;
+ 255   1       E=0;
+ 256   1      }
+ 257          /****************************************************************/
+ 258          void WriteData(unsigned char c)
+ 259          {
+ 260   1       DelayMs(5);   //short delay before operation
+ 261   1       E=0;
+ 262   1       RS=1;
+ 263   1       RW=0;
+ 264   1       _nop_();
+ 265   1       E=1;
+ 266   1       Data=c;
+ 267   1       E=0;
+ 268   1       RS=0;
+ 269   1      }
+ 270          /*********************************************************************/
+ 271          void ShowChar(unsigned char pos,unsigned char c)
+ 272          {
+ 273   1       unsigned char p;
+ 274   1       if (pos>=0x10)
+ 275   1          p=pos+0xb0; //是第二行则命令代码高4位为0xc
+ 276   1       else 
+ 277   1          p=pos+0x80; //是第二行则命令代码高4位为0x8
+ 278   1       WriteCommand (p);//write command
+ 279   1       WriteData (c);   //write data
+ 280   1      }
+ 281          /*************************************************************************/
+ 282          void ShowString (unsigned char line,char *ptr)
+ 283          {
+ 284   1       unsigned char l,i;
+ 285   1       l=line<<4;
+ 286   1       for (i=0;i<16;i++)
+ 287   1        ShowChar (l++,*(ptr+i));//循环显示16个字符
+ 288   1      }
+ 289          /*********************************************************************/
+ 290          void InitLcd()
+ 291          {
+ 292   1       DelayMs(15);
+ 293   1       WriteCommand(0x38); //display mode
+ 294   1       WriteCommand(0x38); //display mode
+ 295   1       WriteCommand(0x38); //display mode
+ 296   1       WriteCommand(0x06); //显示光标移动位置
+ 297   1       WriteCommand(0x0c); //显示开及光标设置
+ 298   1       WriteCommand(0x01); //显示清屏
+ 299   1      
+ 300   1      }
+ 301          
+ 302          
+ 303          /////////////////////////////////////////////////////////////////
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 15:46:48 PAGE 6   
+
+ 304          void disp(void)
+ 305          
+ 306          {
+ 307   1      
+ 308   1      
+ 309   1       FirstLine[2]='0'+TempData[0];
+ 310   1       FirstLine[4]='0'+TempData[1];
+ 311   1       FirstLine[3]='.';
+ 312   1       FirstLine[6]='V';
+ 313   1      
+ 314   1       FirstLine[9]='0'+TempData[2];
+ 315   1       FirstLine[11]='0'+TempData[3];
+ 316   1       FirstLine[10]='.';
+ 317   1       FirstLine[13]='V';
+ 318   1      
+ 319   1      
+ 320   1      
+ 321   1       
+ 322   1       SecondLine[2]='0'+TempData[4];
+ 323   1       SecondLine[4]='0'+TempData[5];
+ 324   1       SecondLine[3]='.';
+ 325   1       SecondLine[6]='V';
+ 326   1      
+ 327   1       SecondLine[9]='0'+TempData[6];
+ 328   1       SecondLine[11]='0'+TempData[7];
+ 329   1       SecondLine[10]='.';
+ 330   1       SecondLine[13]='V';
+ 331   1      
+ 332   1      ShowString(0,FirstLine);
+ 333   1      
+ 334   1      ShowString(1,SecondLine);
+ 335   1      
+ 336   1      }
+ 337          /*------------------------------------------------
+ 338                              延时程序
+ 339          ------------------------------------------------*/
+ 340           void mDelay(unsigned char j)
+ 341           {
+ 342   1        unsigned int i;
+ 343   1        for(;j>0;j--)
+ 344   1           {
+ 345   2                for(i=0;i<125;i++)
+ 346   2                   {;}
+ 347   2                }
+ 348   1        }
+ 349          /*------------------------------------------------
+ 350                              主函数
+ 351          ------------------------------------------------*/
+ 352          main()
+ 353          {  
+ 354   1               unsigned char ADtemp;                //定义中间变量
+ 355   1               InitLcd();
+ 356   1           mDelay(20);
+ 357   1               RST=0;         //              关时钟DS1302 
+ 358   1              while(1)
+ 359   1              {
+ 360   2      
+ 361   2              /********以下AD-DA处理*************/  
+ 362   2              
+ 363   2                  switch(AD_CHANNEL)
+ 364   2                      {
+ 365   3                              case 0: PCF8591_SendByte(AddWr,1);
+C51 COMPILER V9.01   MAIN                                                                  08/22/2017 15:46:48 PAGE 7   
+
+ 366   3                                   ADtemp = PCF8591_RcvByte(AddWr);  //ADC0 模数转换1  J8上可接任意电阻元件
+ 367   3                                       TempData[0]=ADtemp/50;//处理0通道电压显示
+ 368   3                                       TempData[1]=(ADtemp%50)/10;
+ 369   3                                       break;  
+ 370   3                              
+ 371   3                              case 1: PCF8591_SendByte(AddWr,2);
+ 372   3                                   ADtemp=PCF8591_RcvByte(AddWr);  //ADC1  模数转换2
+ 373   3                                       TempData[2]=ADtemp/50;//处理1通道电压显示
+ 374   3                                       TempData[3]=(ADtemp%50)/10;
+ 375   3                                       break;  
+ 376   3                              
+ 377   3                              case 2: PCF8591_SendByte(AddWr,3);
+ 378   3                                   ADtemp=PCF8591_RcvByte(AddWr);  //ADC2     模数转换3   可调电阻SW1
+ 379   3                                       TempData[4]=ADtemp/50;//处理2通道电压显示
+ 380   3                                       TempData[5]=(ADtemp%50)/10;
+ 381   3                                       break;  
+ 382   3                              
+ 383   3                              case 3: PCF8591_SendByte(AddWr,0);
+ 384   3                                   ADtemp=PCF8591_RcvByte(AddWr);  //ADC3   模数转换4  可调电阻SW2
+ 385   3                                       TempData[6]=ADtemp/50;//处理3通道电压显示
+ 386   3                                       TempData[7]=(ADtemp%50)/10;
+ 387   3                                       break;  
+ 388   3                              
+ 389   3                              case 4: Pcf8591_DaConversion(AddWr,0, ADtemp); //DAC      数模转换
+ 390   3                                   break;
+ 391   3                      }                       
+ 392   2                 if(++AD_CHANNEL>4) AD_CHANNEL=0;
+ 393   2                 disp();       
+ 394   2         }
+ 395   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    751    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     43       6
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

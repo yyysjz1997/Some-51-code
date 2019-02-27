@@ -1,0 +1,427 @@
+C51 COMPILER V9.01   MAIN                                                                  08/18/2017 21:36:31 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include<reg52.h> //包含头文件，一般情况不需要改动，头文件包含特殊功能寄存器的定义
+   2          #include<intrins.h>
+   3          #define uint unsigned int
+   4          #define uchar unsigned char
+   5          sbit RS = P1^0;   //定义端口
+   6          sbit RW = P1^1;
+   7          sbit EN = P2^5;
+   8          sbit DU = P2^6;
+   9          sbit WE = P2^7;
+  10          sbit  DS1302_CLK = P2^1;              //实时时钟时钟线引脚
+  11          sbit  DS1302_IO  = P2^0;              //实时时钟数据线引脚
+  12          sbit  DS1302_RST = P2^4;              //实时时钟复位线引脚
+  13          sbit  ACC0 = ACC^0;
+  14          sbit  ACC7 = ACC^7;
+  15          
+  16          typedef struct __SYSTEMTIME__
+  17          {
+  18                  unsigned char Second;
+  19                  unsigned char Minute;
+  20                  unsigned char Hour;
+  21                  unsigned char Week;
+  22                  unsigned char Day;
+  23                  unsigned char Month;
+  24                  unsigned char Year;
+  25                  unsigned char DateString[9];
+  26                  unsigned char TimeString[9];
+  27          }SYSTEMTIME;    //定义的时间类型
+  28          
+  29          #define AM(X)   X
+  30          #define PM(X)   (X+12)                    // 转成24小时制
+  31          #define DS1302_SECOND   0x80     //写寄存器
+  32          #define DS1302_MINUTE   0x82
+  33          #define DS1302_HOUR             0x84
+  34          #define DS1302_WEEK             0x8A
+  35          #define DS1302_DAY              0x86
+  36          #define DS1302_MONTH    0x88
+  37          #define DS1302_YEAR             0x8C
+  38          #define DS1302_RAM(X)   (0xC0+(X)*2)    //用于计算 DS1302_RAM 地址的宏
+  39          
+  40          uint x,y;
+  41          uchar num,num_m;
+  42          
+  43          void cmg88()//关数码管
+  44          {
+  45   1                      DU = 1;
+  46   1                      P0 = 0X00;
+  47   1                      DU = 0;
+  48   1                      WE = 0;
+  49   1      }
+  50          /*------------------------------------------------
+  51           uS延时函数，含有输入参数 unsigned char t，无返回值
+  52           unsigned char 是定义无符号字符变量，其值的范围是
+  53           0~255 这里使用晶振12M，精确延时请使用汇编,大致延时
+  54           长度如下 T=tx2+5 uS
+  55          ------------------------------------------------*/
+C51 COMPILER V9.01   MAIN                                                                  08/18/2017 21:36:31 PAGE 2   
+
+  56          void DelayUs2x(unsigned char t)
+  57          {
+  58   1              while(--t);
+  59   1      }
+  60          /*------------------------------------------------
+  61           mS延时函数，含有输入参数 unsigned char t，无返回值
+  62           unsigned char 是定义无符号字符变量，其值的范围是
+  63           0~255 这里使用晶振12M，精确延时请使用汇编
+  64          ------------------------------------------------*/
+  65          void DelayMs(unsigned char t)
+  66          {
+  67   1      
+  68   1       while(t--)
+  69   1       {
+  70   2           //大致延时1mS
+  71   2           DelayUs2x(245);
+  72   2               DelayUs2x(245);
+  73   2       }
+  74   1      }
+  75          
+  76           bit LCD_Check_Busy(void)
+  77           {
+  78   1               P0 = 0xff;
+  79   1               RS = 0;
+  80   1               RW = 1;
+  81   1               EN = 0;
+  82   1               _nop_();
+  83   1               EN = 1;
+  84   1               return (bit)(P0 & 0x80);         //强制取最高位
+  85   1       }
+  86          
+  87           void LCD_Write_Com(unsigned char com)
+  88           {
+  89   1               while(LCD_Check_Busy()); //忙则等待
+  90   1               RS=0;
+  91   1               RW=0;
+  92   1               EN=1;
+  93   1               P0 = com;
+  94   1               _nop_();
+  95   1               EN=0;
+  96   1       }
+  97          
+  98           void LCD_Write_Data(unsigned char Data)
+  99           {
+ 100   1               while(LCD_Check_Busy()); //忙则等待
+ 101   1               RS=1;
+ 102   1               RW=0;
+ 103   1               EN=1;
+ 104   1               P0 = Data;
+ 105   1               _nop_();
+ 106   1               EN=0;
+ 107   1       }
+ 108          
+ 109           void LCD_Clear(void)
+ 110           {
+ 111   1               LCD_Write_Com(0x01);
+ 112   1               DelayMs(5);
+ 113   1       }
+ 114          
+ 115           void LCD_Write_String(unsigned char x,unsigned char y,unsigned char *s)
+ 116           {
+ 117   1               if (y == 0)
+C51 COMPILER V9.01   MAIN                                                                  08/18/2017 21:36:31 PAGE 3   
+
+ 118   1               {
+ 119   2                              LCD_Write_Com(0x80 + x);     //表示第一行
+ 120   2               }
+ 121   1               else
+ 122   1               {
+ 123   2                              LCD_Write_Com(0xC0 + x);      //表示第二行
+ 124   2               }
+ 125   1               while (*s)
+ 126   1               {
+ 127   2                              LCD_Write_Data( *s);
+ 128   2                              s ++;
+ 129   2               }
+ 130   1       }
+ 131          
+ 132           void LCD_Write_Char(unsigned char x,unsigned char y,unsigned char Data)
+ 133           {
+ 134   1               if (y == 0)
+ 135   1               {
+ 136   2                      LCD_Write_Com(0x80 + x);
+ 137   2               }
+ 138   1               else
+ 139   1               {
+ 140   2                      LCD_Write_Com(0xC0 + x);
+ 141   2               }
+ 142   1               LCD_Write_Data( Data);
+ 143   1       }
+ 144          
+ 145           void LCD_Init(void)            //静态初始化
+ 146           {
+ 147   1         LCD_Write_Com(0x38);    /*显示模式设置*/
+ 148   1         DelayMs(5);
+ 149   1         LCD_Write_Com(0x38);
+ 150   1         DelayMs(5);
+ 151   1         LCD_Write_Com(0x38);
+ 152   1         DelayMs(5);
+ 153   1         LCD_Write_Com(0x38);
+ 154   1         LCD_Write_Com(0x08);    /*显示关闭*/
+ 155   1         LCD_Write_Com(0x01);    /*显示清屏*/
+ 156   1         LCD_Write_Com(0x06);    /*显示光标移动设置*/
+ 157   1         DelayMs(5);
+ 158   1         LCD_Write_Com(0x0C);    /*显示开及光标设置*/
+ 159   1         //LCD_Write_Com(0x0f);
+ 160   1       }
+ 161          
+ 162          void delay(uint z)
+ 163          {
+ 164   1              uint x,y;
+ 165   1              for(x=z;z>0;z--)
+ 166   1                      for(y=112;y>0;y--);
+ 167   1      }
+ 168          
+ 169          void DS1302InputByte(unsigned char d)   //实时时钟写入一字节(内部函数)
+ 170          {
+ 171   1          unsigned char i;
+ 172   1          ACC = d;
+ 173   1          for(i=8; i>0; i--)
+ 174   1          {
+ 175   2              DS1302_IO = ACC0;               //相当于汇编中的 RRC
+ 176   2              DS1302_CLK = 1;
+ 177   2              DS1302_CLK = 0;
+ 178   2              ACC = ACC >> 1;
+ 179   2          }
+C51 COMPILER V9.01   MAIN                                                                  08/18/2017 21:36:31 PAGE 4   
+
+ 180   1      }
+ 181          
+ 182          unsigned char DS1302OutputByte(void)    //实时时钟读取一字节(内部函数)
+ 183          {
+ 184   1          unsigned char i;
+ 185   1          for(i=8; i>0; i--)
+ 186   1          {
+ 187   2              ACC = ACC >>1;                          //相当于汇编中的 RRC
+ 188   2              ACC7 = DS1302_IO;
+ 189   2              DS1302_CLK = 1;
+ 190   2              DS1302_CLK = 0;
+ 191   2          }
+ 192   1          return(ACC);
+ 193   1      }
+ 194          
+ 195          void Write1302(unsigned char ucAddr, unsigned char ucDa)        //ucAddr: DS1302地址, ucData: 要写的数据
+ 196          {
+ 197   1          DS1302_RST = 0;
+ 198   1          DS1302_CLK = 0;
+ 199   1          DS1302_RST = 1;
+ 200   1          DS1302InputByte(ucAddr);            // 地址，命令
+ 201   1          DS1302InputByte(ucDa);              // 写1Byte数据
+ 202   1      //    DS1302_CLK = 1;
+ 203   1          DS1302_RST = 0;
+ 204   1      }
+ 205          
+ 206          unsigned char Read1302(unsigned char ucAddr)    //读取DS1302某地址的数据
+ 207          {
+ 208   1          unsigned char ucData;
+ 209   1          DS1302_RST = 0;
+ 210   1          DS1302_CLK = 0;
+ 211   1          DS1302_RST = 1;
+ 212   1          DS1302InputByte(ucAddr|0x01);        // 地址，命令
+ 213   1          ucData = DS1302OutputByte();         // 读1Byte数据
+ 214   1      //    DS1302_CLK = 1;
+ 215   1          DS1302_RST = 0;
+ 216   1          return(ucData);
+ 217   1      }
+ 218          
+ 219          void DS1302_SetProtect(bit flag)        //是否写保护
+ 220          {
+ 221   1              if(flag)
+ 222   1                      Write1302(0x8E,0x80);   //应该是0x80才对
+ 223   1              else
+ 224   1                      Write1302(0x8E,0x00);
+ 225   1      }
+ 226          
+ 227          void DS1302_SetTime(unsigned char Address, unsigned char Value)        // 设置时间函数
+ 228          {
+ 229   1              DS1302_SetProtect(0);
+ 230   1              Write1302(Address, ((Value/10)<<4 | (Value%10)));  //生成BCD码
+ 231   1      }
+ 232          
+ 233          void DS1302_GetTime(SYSTEMTIME *Time)
+ 234          {
+ 235   1              unsigned char ReadValue;
+ 236   1              ReadValue = Read1302(DS1302_SECOND);
+ 237   1              Time->Second = ((ReadValue&0x70)>>4)*10 + (ReadValue&0x0F);     //八进制转换成十进制
+ 238   1              ReadValue = Read1302(DS1302_MINUTE);
+ 239   1              Time->Minute = ((ReadValue&0x70)>>4)*10 + (ReadValue&0x0F);
+ 240   1              ReadValue = Read1302(DS1302_HOUR);
+ 241   1              Time->Hour = ((ReadValue&0x70)>>4)*10 + (ReadValue&0x0F);
+C51 COMPILER V9.01   MAIN                                                                  08/18/2017 21:36:31 PAGE 5   
+
+ 242   1              ReadValue = Read1302(DS1302_DAY);
+ 243   1              Time->Day = ((ReadValue&0x70)>>4)*10 + (ReadValue&0x0F);
+ 244   1              ReadValue = Read1302(DS1302_WEEK);
+ 245   1              Time->Week = ((ReadValue&0x70)>>4)*10 + (ReadValue&0x0F);
+ 246   1              ReadValue = Read1302(DS1302_MONTH);
+ 247   1              Time->Month = ((ReadValue&0x70)>>4)*10 + (ReadValue&0x0F);
+ 248   1              ReadValue = Read1302(DS1302_YEAR);
+ 249   1              Time->Year = ((ReadValue&0x70)>>4)*10 + (ReadValue&0x0F);
+ 250   1      }
+ 251          
+ 252          void DateToStr(SYSTEMTIME *Time)         //转化为字符串
+ 253          {
+ 254   1              Time->DateString[0] = Time->Year/10 ;    //分离出个位和十位
+ 255   1              Time->DateString[1] = Time->Year%10 ;
+ 256   1              Time->DateString[2] = '-';
+ 257   1              Time->DateString[3] = Time->Month/10;
+ 258   1              Time->DateString[4] = Time->Month%10 ;
+ 259   1              Time->DateString[5] = '-';
+ 260   1              Time->DateString[6] = Time->Day/10 ;
+ 261   1              Time->DateString[7] = Time->Day%10 ;
+ 262   1              Time->DateString[8] = '\0';
+ 263   1      }
+ 264          
+ 265          void TimeToStr(SYSTEMTIME *Time)
+ 266          {
+ 267   1              Time->TimeString[0] = Time->Hour/10 ;
+ 268   1              Time->TimeString[1] = Time->Hour%10 ;
+ 269   1              Time->TimeString[2] = ':';
+ 270   1              Time->TimeString[3] = Time->Minute/10 ;
+ 271   1              Time->TimeString[4] = Time->Minute%10 ;
+ 272   1              Time->TimeString[5] = ':';
+ 273   1              Time->TimeString[6] = Time->Second/10;
+ 274   1              Time->TimeString[7] = Time->Second%10 ;
+ 275   1              Time->TimeString[8] = '\0';
+ 276   1      }
+ 277          
+ 278          void Initial_DS1302(void)
+ 279          {
+ 280   1              unsigned char Second=Read1302(DS1302_SECOND);
+ 281   1              if(Second&0x80)
+ 282   1                      DS1302_SetTime(DS1302_SECOND,0);
+ 283   1      }
+ 284          
+ 285          void Week(SYSTEMTIME *Time)     
+ 286          {
+ 287   1              switch(Time->Week)
+ 288   1              {                                                               
+ 289   2                      case 1:LCD_Write_Char(12,0,'M');//delay(5);
+ 290   2                             delay(5);
+ 291   2                                 LCD_Write_Char(13,0,'0');//delay(5);
+ 292   2                                 delay(5);
+ 293   2                                 LCD_Write_Char(14,0,'N');
+ 294   2                                 delay(5);
+ 295   2                                 break;
+ 296   2      
+ 297   2                      case 2:LCD_Write_Char(12,0,'T');//delay(5);
+ 298   2                             delay(5);
+ 299   2                                 LCD_Write_Char(13,0,'U');//delay(5);
+ 300   2                                 delay(5);
+ 301   2                                 LCD_Write_Char(14,0,'E');
+ 302   2                                 delay(5);
+ 303   2                                 break;
+C51 COMPILER V9.01   MAIN                                                                  08/18/2017 21:36:31 PAGE 6   
+
+ 304   2      
+ 305   2                      case 3:LCD_Write_Char(12,0,'W');//delay(5);
+ 306   2                             delay(5);
+ 307   2                                 LCD_Write_Char(13,0,'E');//delay(5);
+ 308   2                                 delay(5);
+ 309   2                                 LCD_Write_Char(14,0,'D');
+ 310   2                                 delay(5);
+ 311   2                                 break;
+ 312   2      
+ 313   2                      case 4:LCD_Write_Char(12,0,'T');//delay(5);
+ 314   2                             delay(5);
+ 315   2                                 LCD_Write_Char(13,0,'H');//delay(5);
+ 316   2                                 delay(5);
+ 317   2                                 LCD_Write_Char(14,0,'U');
+ 318   2                                 delay(5);
+ 319   2                                 break;
+ 320   2      
+ 321   2                      case 5:LCD_Write_Char(12,0,'F');//delay(5);
+ 322   2                             delay(5);
+ 323   2                                 LCD_Write_Char(13,0,'R');//delay(5);
+ 324   2                                 delay(5);
+ 325   2                                 LCD_Write_Char(14,0,'I');
+ 326   2                                 delay(5);
+ 327   2                                 break;
+ 328   2      
+ 329   2                      case 6:LCD_Write_Char(12,0,'S');//delay(5);
+ 330   2                             delay(5);
+ 331   2                                 LCD_Write_Char(13,0,'T');//delay(5);
+ 332   2                                 delay(5);
+ 333   2                                 LCD_Write_Char(14,0,'A');
+ 334   2                                 delay(5);
+ 335   2                                 break;
+ 336   2      
+ 337   2                      case 7:LCD_Write_Char(12,0,'S');//delay(5);
+ 338   2                             delay(5);
+ 339   2                                 LCD_Write_Char(13,0,'U');//delay(5);
+ 340   2                                 delay(5);
+ 341   2                                 LCD_Write_Char(14,0,'N');
+ 342   2                                 delay(5);
+ 343   2                                 break;
+ 344   2              }
+ 345   1      }
+ 346          
+ 347          void display(SYSTEMTIME *Time)
+ 348          {
+ 349   1         LCD_Write_Char(1,0,'2');
+ 350   1         LCD_Write_Char(2,0,'0');
+ 351   1         LCD_Write_Char(3,0,(Time->DateString[0])+'0');   
+ 352   1         LCD_Write_Char(4,0,(Time->DateString[1])+'0');
+ 353   1         LCD_Write_Char(5,0,'-');
+ 354   1         LCD_Write_Char(6,0,(Time->DateString[3])+'0');
+ 355   1         LCD_Write_Char(7,0,(Time->DateString[4])+'0');   
+ 356   1         LCD_Write_Char(8,0,'-');
+ 357   1         LCD_Write_Char(9,0,(Time->DateString[6])+'0');
+ 358   1         LCD_Write_Char(10,0,(Time->DateString[7])+'0'); 
+ 359   1         Week(Time);
+ 360   1         LCD_Write_Char(4,1,(Time->TimeString[0])+'0');   
+ 361   1         LCD_Write_Char(5,1,(Time->TimeString[1])+'0');
+ 362   1         LCD_Write_Char(6,1,':');
+ 363   1         LCD_Write_Char(7,1,(Time->TimeString[3])+'0');
+ 364   1         LCD_Write_Char(8,1,(Time->TimeString[4])+'0');   
+ 365   1         LCD_Write_Char(9,1,':');
+C51 COMPILER V9.01   MAIN                                                                  08/18/2017 21:36:31 PAGE 7   
+
+ 366   1         LCD_Write_Char(10,1,(Time->TimeString[6])+'0');
+ 367   1         LCD_Write_Char(11,1,(Time->TimeString[7])+'0');
+ 368   1      }
+ 369          
+ 370          void main()
+ 371          {
+ 372   1          SYSTEMTIME CurrentTime;
+ 373   1              Initial_DS1302();
+ 374   1              cmg88();//关数码管，点阵函数
+ 375   1              LCD_Init();   //静态初始化
+ 376   1              LCD_Clear();//清屏
+ 377   1              DS1302_SetTime(DS1302_HOUR,23); //设置的时间是10：54：30
+ 378   1              DS1302_SetTime(DS1302_MINUTE,59);
+ 379   1              DS1302_SetTime(DS1302_SECOND,56);
+ 380   1              DS1302_SetTime(DS1302_WEEK,7);
+ 381   1              DS1302_SetTime(DS1302_DAY,13);
+ 382   1              DS1302_SetTime(DS1302_MONTH,8);
+ 383   1              DS1302_SetTime(DS1302_YEAR,17); 
+ 384   1              while(1)
+ 385   1              {
+ 386   2                  DS1302_GetTime(&CurrentTime);
+ 387   2                      DateToStr(&CurrentTime);
+ 388   2                      TimeToStr(&CurrentTime);
+ 389   2                      display(&CurrentTime);
+ 390   2              }
+ 391   1      }
+ 392          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1339    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      6      30
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

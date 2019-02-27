@@ -1,0 +1,57 @@
+C51 COMPILER V8.06   MAIN                                                                  08/09/2017 17:06:41 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          
+   3          void main()
+   4          {
+   5   1              TMOD = 0x20;     //确定T1的工作方式，方式2      ：8位计数方式，一次两个十六进制。方便LED显示
+   6   1      
+   7   1              TH1 = 0xfd;     //根据PPT上公式，算出为波特率为9600时的TH1值
+   8   1              TL1 = 0xfd;
+   9   1      
+  10   1              TR1 = 1;           //启动T1
+  11   1      
+  12   1              REN = 1;          //设为1为串口允许接收
+  13   1      
+  14   1              SM0 = 0;         //SCON串行口控制方式1
+  15   1              SM1 = 1;
+  16   1      
+  17   1              EA = 1;
+  18   1              ES = 1;
+  19   1      
+  20   1              while(1)
+  21   1              {
+  22   2              /*      if(RI == 1)
+  23   2                      {
+  24   2                              RI = 0;
+  25   2                              P1 = SBUF;
+  26   2                      }  */
+  27   2              }
+  28   1      }
+  29          
+  30          void ser()interrupt 4              //中断形式
+  31          {
+  32   1              RI = 0;
+  33   1              P1 = SBUF;
+  34   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     29    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

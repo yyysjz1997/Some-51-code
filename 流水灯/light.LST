@@ -1,0 +1,48 @@
+C51 COMPILER V8.06   LIGHT                                                                 07/23/2017 00:27:50 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE LIGHT
+OBJECT MODULE PLACED IN light.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE light.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #include <intrins.h>
+   3          #include <math.h>
+   4          #define uint unsigned int 
+   5          sbit FM=P2^3;
+   6          
+   7          void delay(uint xms)             //ÑÓ³Ùº¯Êý             
+   8          {
+   9   1              uint i,j;
+  10   1              for(i=xms;i>0;i--)                    //i=xms¼´ÑÓÊ±Ô¼xmsºÁÃë
+  11   1                      for(j=112;j>0;j--);
+  12   1      }
+  13          
+  14          void main()
+  15          {
+  16   1           P1=0xfe;
+  17   1               while(1)
+  18   1               {
+  19   2                      P1=_crol_(P1,1);
+  20   2                      FM=1;
+  21   2                      delay(100);
+  22   2                      FM=~FM;
+  23   2                      delay(100);     
+  24   2               }
+  25   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     66    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,299 @@
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 17:07:53 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          /**********************BST-V51实验开发板例程************************
+   2          *  平台：BST-V51 + Keil U3 + STC89C52
+   3          *  名称：DA输出LED渐变显示
+   4          *  公司：深圳市亚博软件开发有限公司
+   5          *  淘宝：bstmcu.taobao.com       
+   6          *  日期：2012-8-14
+   7          *  晶振:11.0592MHZ
+   8          *  说明：免费开源，不提供源代码分析.
+   9          ******************************************************************/
+  10          /*-----------------------------------------------
+  11            名称：IIC协议 PCF8591ADDA转换            
+  12            内容：此程序通过IIC协议对DAAD芯片操作, 并输出模拟量，用LED亮度渐变指示
+  13            ////////////杜邦线 接上 P2.3到VCC
+  14          ------------------------------------------------*/
+  15           #include<reg52.h>    //包含头文件，一般情况不需要改动，头文件包含特殊功能寄存器的定义
+  16           #include <intrins.h> //包含NOP空指令函数_nop_();
+  17          
+  18           #define AddWr 0x90   //写数据地址 
+  19           #define AddRd 0x91   //读数据地址
+  20          
+  21           sbit RST=P2^4;   //关掉时钟芯片输出 
+  22           sbit Sda=P2^0;      //定义总线连接端口
+  23           sbit Scl=P2^1;
+  24           sbit Fm=P2^3;    //FM
+  25           sbit dula=P2^7;
+  26           sbit wela=P2^6;
+  27          // bit ADFlag;          //定义AD采样标志位
+  28          unsigned char code Datatab[]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f};//7段数共阴码管段码表
+  29          data unsigned char  Display[8];//定义临时存放数码管数值
+  30          /*------------------------------------------------
+  31                              延时程序
+  32          ------------------------------------------------*/
+  33           void mDelay(unsigned char j)
+  34           {
+  35   1        unsigned int i;
+  36   1        for(;j>0;j--)
+  37   1           {
+  38   2                for(i=0;i<125;i++)
+  39   2                   {;}
+  40   2                }
+  41   1        }
+  42          /*------------------------------------------------
+  43                              初始化定时器1
+  44          ------------------------------------------------*/
+  45          void Init_Timer1(void)
+  46          {
+  47   1       TMOD |= 0x10;                       
+  48   1       TH1=0xff;                      /* Init value */
+  49   1       TL1=0x00;
+  50   1       //PT1=1;                   /* 优先级    */
+  51   1       EA=1;                      /* interupt enable */
+  52   1       ET1=1;                     /* enable timer1 interrupt */
+  53   1       TR1=1;  
+  54   1      }
+  55          /*------------------------------------------------
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 17:07:53 PAGE 2   
+
+  56                              启动IIC总线
+  57          ------------------------------------------------*/
+  58            void Start(void)
+  59            {
+  60   1         Sda=1;
+  61   1         _nop_();
+  62   1         Scl=1;
+  63   1         _nop_();
+  64   1         Sda=0;
+  65   1         _nop_();
+  66   1         Scl=0;
+  67   1        }
+  68          
+  69          
+  70          /*------------------------------------------------
+  71                              停止IIC总线
+  72          ------------------------------------------------*/
+  73            void Stop(void)
+  74            {
+  75   1         Sda=0;
+  76   1         _nop_();
+  77   1         Scl=1;
+  78   1         _nop_();
+  79   1         Sda=1;
+  80   1         _nop_();
+  81   1         Scl=0;
+  82   1         }
+  83          
+  84          
+  85          /*------------------------------------------------
+  86                             应答IIC总线
+  87          ------------------------------------------------*/
+  88             void Ack(void)
+  89             {
+  90   1          Sda=0;
+  91   1              _nop_();
+  92   1              Scl=1;
+  93   1              _nop_();
+  94   1              Scl=0;
+  95   1              _nop_();
+  96   1              }
+  97          
+  98          
+  99          /*------------------------------------------------
+ 100                           非应答IIC总线
+ 101          ------------------------------------------------*/
+ 102                  void NoAck(void)
+ 103                  {
+ 104   1               Sda=1;
+ 105   1               _nop_();
+ 106   1               Scl=1;
+ 107   1               _nop_();
+ 108   1               Scl=0;
+ 109   1               _nop_();
+ 110   1               }
+ 111          
+ 112          
+ 113          /*------------------------------------------------
+ 114                        发送一个字节
+ 115          ------------------------------------------------*/
+ 116                   void Send(unsigned char Data)
+ 117                   { 
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 17:07:53 PAGE 3   
+
+ 118   1                unsigned char BitCounter=8;
+ 119   1                unsigned char temp;
+ 120   1      
+ 121   1                do
+ 122   1                  {
+ 123   2                       temp=Data;
+ 124   2                       Scl=0;
+ 125   2                       _nop_();
+ 126   2                       if((temp&0x80)==0x80)
+ 127   2                          Sda=1;
+ 128   2                       else
+ 129   2                          Sda=0;
+ 130   2      
+ 131   2                              Scl=1;
+ 132   2                              temp=Data<<1;
+ 133   2                              Data=temp;
+ 134   2                              BitCounter--;
+ 135   2                        }
+ 136   1                while(BitCounter);
+ 137   1                    Scl=0;
+ 138   1                }
+ 139          
+ 140          
+ 141          /*------------------------------------------------
+ 142                         读入一个字节并返回
+ 143          ------------------------------------------------*/
+ 144                    unsigned char Read(void)
+ 145                    {
+ 146   1                 unsigned char temp=0;
+ 147   1                 unsigned char temp1=0;
+ 148   1                 unsigned char BitCounter=8;
+ 149   1      
+ 150   1                 Sda=1;
+ 151   1                 do
+ 152   1                   {
+ 153   2                        Scl=0;
+ 154   2                _nop_();
+ 155   2                        Scl=1;
+ 156   2                        _nop_();
+ 157   2                        if(Sda)
+ 158   2                           temp=temp|0x01;
+ 159   2                        else
+ 160   2                           temp=temp&0xfe;
+ 161   2      
+ 162   2                        if(BitCounter-1)
+ 163   2                           {
+ 164   3                                temp1=temp<<1;
+ 165   3                                temp=temp1;
+ 166   3                                }
+ 167   2                                BitCounter--;
+ 168   2                               }
+ 169   1                      while(BitCounter);
+ 170   1                      return(temp);
+ 171   1                }
+ 172           
+ 173          /*------------------------------------------------
+ 174                              写入DA数模转换值
+ 175          ------------------------------------------------*/
+ 176                    void DAC(unsigned char Data)
+ 177                    {
+ 178   1                         Start();
+ 179   1                         Send(AddWr); //写入芯片地址
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 17:07:53 PAGE 4   
+
+ 180   1                         Ack();
+ 181   1                         Send(0x40);  //写入控制位，使能DAC输出
+ 182   1                         Ack();
+ 183   1                         Send(Data);  //写数据
+ 184   1                         Ack();
+ 185   1                         Stop();
+ 186   1                       
+ 187   1                 }
+ 188          
+ 189          /*------------------------------------------------
+ 190                           读取AD模数转换的值，有返回值
+ 191          ------------------------------------------------*/
+ 192                    unsigned char ReadADC(unsigned char Chl)
+ 193                    {
+ 194   1             unsigned char Data;
+ 195   1                         Start();        //写入芯片地址
+ 196   1                         Send(AddWr);
+ 197   1                         Ack();
+ 198   1                         Send(0x40|Chl);//写入选择的通道，本程序只用单端输入，差分部分需要自行添加
+ 199   1                                        //Chl的值分别为0、1、2、3，分别代表1-4通道
+ 200   1                         Ack();
+ 201   1                         Start();
+ 202   1                         Send(AddRd);    //读入地址
+ 203   1                         Ack();
+ 204   1                         Data=Read();    //读数据
+ 205   1                         Scl=0;
+ 206   1                         NoAck();
+ 207   1                         Stop();
+ 208   1                         return Data;   //返回值
+ 209   1                }
+ 210          
+ 211                          void fmg(void)//fm关 
+ 212                  {       
+ 213   1              Fm=1;   //              关 fm 
+ 214   1              }
+ 215                           void cmg(void)//数码管锁存函数            关时钟DS1302
+ 216                  {
+ 217   1              dula=1;
+ 218   1              P0=0x00;
+ 219   1              dula=0;
+ 220   1              wela=1;
+ 221   1              P0=0x00;
+ 222   1              wela=0;
+ 223   1              RST=0;          //              关时钟DS1302
+ 224   1              }
+ 225          /*------------------------------------------------
+ 226                             主程序
+ 227          ------------------------------------------------*/
+ 228                  void main()
+ 229                  {
+ 230   1               unsigned char num;                   //DA数模输出变量
+ 231   1          unsigned char ADtemp;                //定义中间变量
+ 232   1           Init_Timer1();
+ 233   1               cmg();//数码管锁存
+ 234   1                fmg();
+ 235   1               while(1)
+ 236   1                    { 
+ 237   2                      
+ 238   2                 DAC(num);       //DA输出，可以用LED模拟电压变化
+ 239   2                         num++;          //累加，到256后溢出变为0，往复循环。显示在LED上亮度逐渐变化
+ 240   2                         mDelay(20);     //延时用于清晰看出变化
+ 241   2                         /*if(ADFlag)      //定时采集输入模拟量
+C51 COMPILER V8.06   MAIN                                                                  08/11/2017 17:07:53 PAGE 5   
+
+ 242   2                      
+ 243   2                 {
+ 244   2                      ADFlag=0;
+ 245   2      
+ 246   2                      ADtemp=ReadADC(0);
+ 247   2                      Display[0]=Datatab[(ReadADC(0))/50]|0x80;//处理0通道电压显示
+ 248   2                      Display[1]=Datatab[((ReadADC(0))%50)/10];
+ 249   2              
+ 250   2              ADtemp=ReadADC(1);
+ 251   2                      Display[2]=Datatab[((ReadADC(1))/50)]|0x80;//处理1通道电压显示 此通道暂时屏蔽，可以自行添加
+ 252   2                      Display[3]=Datatab[((ReadADC(1))%50)/10];
+ 253   2                      
+ 254   2              ADtemp=ReadADC(2);
+ 255   2                      Display[4]=Datatab[((ReadADC(2))/50)]|0x80;//处理1通道电压显示 此通道暂时屏蔽，可以自行添加
+ 256   2                      Display[5]=Datatab[((ReadADC(2))%50)/10];
+ 257   2                      
+ 258   2              ADtemp=ReadADC(3);
+ 259   2                      Display[6]=Datatab[((ReadADC(3))/50)]|0x80;//处理1通道电压显示 此通道暂时屏蔽，可以自行添加
+ 260   2                      Display[7]=Datatab[((ReadADC(3))%50)/10];
+ 261   2              
+ 262   2      
+ 263   2                         } */
+ 264   2                 }
+ 265   1              }
+*** WARNING C280 IN LINE 231 OF MAIN.C: 'ADtemp': unreferenced local variable
+ 266          
+ 267          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    259    ----
+   CONSTANT SIZE    =     10    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

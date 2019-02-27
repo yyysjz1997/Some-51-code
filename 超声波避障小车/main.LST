@@ -1,0 +1,412 @@
+C51 COMPILER V8.06   MAIN                                                                  08/15/2017 20:05:21 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #include <intrins.h>
+   3          #define uint unsigned int
+   4          #define uchar unsigned char
+   5          sbit RS = P1^0;   //定义端口
+   6          sbit RW = P1^1;
+   7          sbit EN = P2^5;
+   8          sbit DU = P2^6;
+   9          sbit WE = P2^7;
+  10          sbit RX = P2^0 ;//接收端
+  11          sbit TX = P2^1 ;//控制端
+  12          sbit FM = P2^3;
+  13          sbit key = P3^7;
+  14          sbit IN1=P1^2; // 高电平1 后退（反转）
+  15          sbit IN2=P1^3; // 高电平1 前进（正转）
+  16          sbit IN3=P1^6; // 高电平1 前进（正转）  
+  17          sbit IN4=P1^7; // 高电平1 后退（反转）
+  18          sbit EN1=P1^4; // 高电平使能 
+  19          sbit EN2=P1^5; // 高电平使能 
+  20          
+  21          uint x,y;
+  22          uchar a;
+  23          uchar num,num_m;
+  24          void delay(uint z);
+  25          void DelayUs2x(unsigned char t);
+  26          void DelayMs(unsigned char t);
+  27          bit LCD_Check_Busy(void);
+  28          void LCD_Write_Com(unsigned char com) ;
+  29          void LCD_Write_Data(unsigned char Data);
+  30          void LCD_Write_String(unsigned char x,unsigned char y,unsigned char *s);
+  31          void LCD_Write_Char(unsigned char x,unsigned char y,unsigned char Data);
+  32          void LCD_Clear(void);
+  33          void distance_show();
+  34          void gogogo();
+  35          uchar shu;
+  36          uint time;
+  37          unsigned long dis;
+  38          unsigned long distance[4];
+  39          unsigned char code ASCII[10] = {0,1,2,3,4
+  40          ,5,6,7,8,9};
+  41          /************************************超声波模块*****************************/
+  42          void start_ultrasonic()  //开启超声波
+  43          {
+  44   1              TX = 1;
+  45   1              delay(1);        //两次测距之间的时间间隔
+  46   1              TX = 0;
+  47   1      }
+  48          
+  49          void  count_high()
+  50          {
+  51   1              TR0 = 1;
+  52   1              while(RX);       //计数
+  53   1              TR0 = 0;
+  54   1              shu = 0;
+  55   1              distance_show();
+C51 COMPILER V8.06   MAIN                                                                  08/15/2017 20:05:21 PAGE 2   
+
+  56   1              gogogo();       
+  57   1      }
+  58          
+  59          void time0()interrupt 1
+  60          {
+  61   1              shu++;  
+  62   1      }
+  63          
+  64          void distance_show()
+  65          {
+  66   1              time = TH0 * 256 + TL0;
+  67   1              TH0 = 0;
+  68   1              TL0 = 0;
+  69   1      
+  70   1              dis = (time * 1.7)/10 + 10;
+  71   1              if(dis > 2800||dis < 25)
+  72   1              {
+  73   2                      LCD_Write_String(0,1,"out of range!   ");
+  74   2              }
+  75   1              else
+  76   1              {
+  77   2                      distance[0]=dis%10;
+  78   2                  distance[1]=dis/10%10;
+  79   2                  distance[2]=dis/100%10;
+  80   2                  distance[3]=dis/1000;
+  81   2      
+  82   2                  LCD_Write_String(0,1,"Distance:");
+  83   2                  LCD_Write_Char(9, 1, ASCII[distance[3]]+'0');
+  84   2                  LCD_Write_Char(10, 1, ASCII[distance[2]]+'0');
+  85   2                  LCD_Write_Char(11, 1, ASCII[distance[1]]+'0');
+  86   2              LCD_Write_Char(12, 1, '.');
+  87   2                  LCD_Write_Char(13, 1, ASCII[distance[0]]+'0');
+  88   2                      LCD_Write_Char(14, 1, 'C');
+  89   2                      LCD_Write_Char(15, 1, 'M');
+  90   2              }
+  91   1              
+  92   1      }
+  93          
+  94          
+  95          
+  96          
+  97          /************************************超声波模块*****************************/
+  98          
+  99          /**********************************1602液晶******************************/
+ 100          void cmg88()//关数码管
+ 101          {
+ 102   1                      DU = 1;
+ 103   1                      P0 = 0X00;
+ 104   1                      DU = 0;
+ 105   1                      WE = 0;
+ 106   1      }
+ 107          
+ 108          void DelayUs2x(unsigned char t)
+ 109          {
+ 110   1              while(--t);
+ 111   1      }
+ 112          
+ 113          void DelayMs(unsigned char t)
+ 114          {
+ 115   1      
+ 116   1       while(t--)
+ 117   1       {
+C51 COMPILER V8.06   MAIN                                                                  08/15/2017 20:05:21 PAGE 3   
+
+ 118   2           //大致延时1mS
+ 119   2           DelayUs2x(245);
+ 120   2               DelayUs2x(245);
+ 121   2       }
+ 122   1      }
+ 123          
+ 124           bit LCD_Check_Busy(void)
+ 125           {
+ 126   1               P0 = 0xff;
+ 127   1               RS = 0;
+ 128   1               RW = 1;
+ 129   1               EN = 0;
+ 130   1               _nop_();
+ 131   1               EN = 1;
+ 132   1               return (bit)(P0 & 0x80);         //强制取最高位
+ 133   1       }
+ 134          
+ 135           void LCD_Write_Com(unsigned char com)
+ 136           {
+ 137   1               while(LCD_Check_Busy()); //忙则等待
+ 138   1               RS=0;
+ 139   1               RW=0;
+ 140   1               EN=1;
+ 141   1               P0 = com;
+ 142   1               _nop_();
+ 143   1               EN=0;
+ 144   1       }
+ 145          
+ 146           void LCD_Write_Data(unsigned char Data)
+ 147           {
+ 148   1               while(LCD_Check_Busy()); //忙则等待
+ 149   1               RS=1;
+ 150   1               RW=0;
+ 151   1               EN=1;
+ 152   1               P0 = Data;
+ 153   1               _nop_();
+ 154   1               EN=0;
+ 155   1       }
+ 156          
+ 157           void LCD_Clear(void)
+ 158           {
+ 159   1               LCD_Write_Com(0x01);
+ 160   1               DelayMs(5);
+ 161   1       }
+ 162          
+ 163           void LCD_Write_String(unsigned char x,unsigned char y,unsigned char *s)
+ 164           {
+ 165   1               if (y == 0)
+ 166   1               {
+ 167   2                              LCD_Write_Com(0x80 + x);     //表示第一行
+ 168   2               }
+ 169   1               else
+ 170   1               {
+ 171   2                              LCD_Write_Com(0xC0 + x);      //表示第二行
+ 172   2               }
+ 173   1               while (*s)
+ 174   1               {
+ 175   2                              LCD_Write_Data( *s);
+ 176   2                              s ++;
+ 177   2               }
+ 178   1       }
+ 179          
+C51 COMPILER V8.06   MAIN                                                                  08/15/2017 20:05:21 PAGE 4   
+
+ 180           void LCD_Write_Char(unsigned char x,unsigned char y,unsigned char Data)
+ 181           {
+ 182   1               if (y == 0)
+ 183   1               {
+ 184   2                      LCD_Write_Com(0x80 + x);
+ 185   2               }
+ 186   1               else
+ 187   1               {
+ 188   2                      LCD_Write_Com(0xC0 + x);
+ 189   2               }
+ 190   1               LCD_Write_Data( Data);
+ 191   1       }
+ 192          
+ 193           void LCD_Init(void)            //静态初始化
+ 194           {
+ 195   1         LCD_Write_Com(0x38);    /*显示模式设置*/
+ 196   1         DelayMs(5);
+ 197   1         LCD_Write_Com(0x38);
+ 198   1         DelayMs(5);
+ 199   1         LCD_Write_Com(0x38);
+ 200   1         DelayMs(5);
+ 201   1         LCD_Write_Com(0x38);
+ 202   1         LCD_Write_Com(0x08);    /*显示关闭*/
+ 203   1         LCD_Write_Com(0x01);    /*显示清屏*/
+ 204   1         LCD_Write_Com(0x06);    /*显示光标移动设置*/
+ 205   1         DelayMs(5);
+ 206   1         LCD_Write_Com(0x0C);    /*显示开及光标设置*/
+ 207   1         //LCD_Write_Com(0x0f);
+ 208   1       }
+ 209          
+ 210          void delay(uint z)
+ 211          {
+ 212   1              uint x,y;
+ 213   1              for(x=z;z>0;z--)
+ 214   1                      for(y=112;y>0;y--);
+ 215   1      }
+ 216          
+ 217          void _1602_init()
+ 218          {
+ 219   1              cmg88();//关数码管，点阵函数
+ 220   1              LCD_Init();   //静态初始化
+ 221   1              LCD_Clear();//清屏      
+ 222   1      }
+ 223          
+ 224          /************************1602液晶************************************/
+ 225          
+ 226          /***************************车控制***********************************/
+ 227          void run(void)                    
+ 228          {
+ 229   1              EN1=1;
+ 230   1              EN2=1;
+ 231   1          IN1=0;
+ 232   1              IN2=1; //左电机的正转
+ 233   1              IN3=1;
+ 234   1              IN4=0;//右电机的正转
+ 235   1      }
+ 236          
+ 237          void back(void)                 
+ 238          {
+ 239   1              EN1=1;
+ 240   1              EN2=1;
+ 241   1          IN1=1;
+C51 COMPILER V8.06   MAIN                                                                  08/15/2017 20:05:21 PAGE 5   
+
+ 242   1              IN2=0; //左电机的反转
+ 243   1              IN3=0;
+ 244   1              IN4=1;//右电机的反转
+ 245   1      }
+ 246          
+ 247          void right(void)                 
+ 248          {
+ 249   1              EN1=1;
+ 250   1              EN2=1;
+ 251   1          IN1=0;
+ 252   1              IN2=1; //左电机的正转
+ 253   1              IN3=0;
+ 254   1              IN4=0;//右电机不动
+ 255   1      }
+ 256          
+ 257          void left(void)         
+ 258          {
+ 259   1              EN1=1;
+ 260   1              EN2=1;
+ 261   1          IN1=0;
+ 262   1              IN2=0; //左电机不动
+ 263   1              IN3=1;
+ 264   1              IN4=0;//右电机正转
+ 265   1      }
+ 266          
+ 267          void stop(void)                  
+ 268          {
+ 269   1              EN1=1;
+ 270   1              EN2=1;
+ 271   1          IN1=0;
+ 272   1              IN2=0; //左电机不动
+ 273   1              IN3=0;
+ 274   1              IN4=0;//右电机正转
+ 275   1      }
+ 276          
+ 277          void spin_right(void)                     //向右打转函数
+ 278          {
+ 279   1              EN1=1;
+ 280   1              EN2=1;//电机使能
+ 281   1          IN1=0;
+ 282   1              IN2=1; //左电机正转
+ 283   1              IN3=0;
+ 284   1              IN4=1;//右电机反转
+ 285   1      }
+ 286          
+ 287          void gogogo()
+ 288          {
+ 289   1           if(dis <= 240)  
+ 290   1           {  
+ 291   2                a++;
+ 292   2                while(a > 3)
+ 293   2                {
+ 294   3                    //a=0;
+ 295   3                    FM=0;
+ 296   3                    back(); 
+ 297   3                    delay(230);
+ 298   3      
+ 299   3                      right();
+ 300   3                      delay(100);        
+ 301   3                      //stop();
+ 302   3                      delay(100);     
+ 303   3                      start_ultrasonic();                 
+C51 COMPILER V8.06   MAIN                                                                  08/15/2017 20:05:21 PAGE 6   
+
+ 304   3                      while(RX==0);
+ 305   3                      TR0 = 1;             
+ 306   3                      while(RX);      
+ 307   3                      TR0 = 0;            
+ 308   3                      distance_show();
+ 309   3      
+ 310   3                      if(dis>340)  
+ 311   3                      {
+ 312   4                          a=0;
+ 313   4                          right();
+ 314   4                          delay(90);  
+ 315   4                          stop();               
+ 316   4                          delay(200);        
+ 317   4                          FM=1;
+ 318   4                          run();
+ 319   4                      }             
+ 320   3                 } 
+ 321   2           }
+ 322   1           else
+ 323   1           {
+ 324   2                a=0;
+ 325   2                run();       //无障碍物 直行
+ 326   2           }
+ 327   1      } 
+ 328          
+ 329          void keyscan()
+ 330          {
+ 331   1        A:    if(key == 0)
+ 332   1                      {
+ 333   2                              delay(10);
+ 334   2                              if(key == 0)
+ 335   2                              {
+ 336   3                                      FM = 0;
+ 337   3                                      while(!key);
+ 338   3                                      FM = 1;
+ 339   3                              }
+ 340   2                              else
+ 341   2                              {
+ 342   3                                      goto A;
+ 343   3                              }
+ 344   2                       }
+ 345   1                       else
+ 346   1                       {
+ 347   2                              goto A;
+ 348   2                       }
+ 349   1      }
+ 350          
+ 351          /**************************车控制*************************************/
+ 352          void main(void)
+ 353          {
+ 354   1          uint i;
+ 355   1              _1602_init();
+ 356   1      
+ 357   1              TMOD=0x01;
+ 358   1          EA=1;                 
+ 359   1          TH0=0;
+ 360   1          TL0=0;
+ 361   1          ET0=1; 
+ 362   1              LCD_Write_String(2,0,"come on baby");         
+ 363   1              keyscan();
+ 364   1              
+ 365   1              while(1)
+C51 COMPILER V8.06   MAIN                                                                  08/15/2017 20:05:21 PAGE 7   
+
+ 366   1                {        
+ 367   2                      RX=1;
+ 368   2                      start_ultrasonic();              //启动模块 
+ 369   2              for(i = 951;i > 0;i--)
+ 370   2                  {
+ 371   3                     if(RX==1)
+ 372   3                         {
+ 373   4                     count_high();             //超声波高电平脉冲宽度计算函数
+ 374   4                         }
+ 375   3               }      
+ 376   2                }     
+ 377   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    930    ----
+   CONSTANT SIZE    =     50    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     30       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

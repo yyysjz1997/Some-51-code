@@ -1,0 +1,78 @@
+C51 COMPILER V8.06   MAIN                                                                  08/16/2017 10:06:58 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          
+   2          #include<reg52.h> 
+   3          
+   4          
+   5          
+   6          
+   7          
+   8          sbit LED0=P1^0;// 用sbit 关键字 定义 LED到P1.0端口，LED是自己任意定义且容易记忆的符号
+   9          
+  10          
+  11          void Delay(unsigned int t); //函数声明
+  12          /*------------------------------------------------
+  13                              主函数
+  14          ------------------------------------------------*/
+  15          void main (void)
+  16          {
+  17   1                        
+  18   1      unsigned int CYCLE=600,PWM_LOW=0;//定义周期并赋值
+  19   1      
+  20   1      
+  21   1      
+  22   1      
+  23   1              
+  24   1      while (1)         //主循环
+  25   1        {
+  26   2       LED0=1;
+  27   2       Delay(60000);        //特意加延时，可以看到熄灭的过程
+  28   2       for(PWM_LOW=1;PWM_LOW<CYCLE;PWM_LOW++){ //PWM_LOW表示低
+  29   3       //电平时间，这个循环中低电平时长从1累加到CYCLE（周期）的值，即600次
+  30   3      
+  31   3                      LED0=0;        //点亮LED  
+  32   3                      Delay(PWM_LOW);//延时长度，600次循环中从1加至599
+  33   3                      LED0=1;        //熄灭LED
+  34   3                  Delay(CYCLE-PWM_LOW);//延时长度，600次循环中从599减至1
+  35   3           
+  36   3         }
+  37   2       LED0=0;
+  38   2       for(PWM_LOW=CYCLE-1;PWM_LOW>0;PWM_LOW--){ //与逐渐变亮相反的过程
+  39   3      
+  40   3                      LED0=0;
+  41   3                      Delay(PWM_LOW);
+  42   3                      LED0=1;
+  43   3                  Delay(CYCLE-PWM_LOW);
+  44   3           
+  45   3         }
+  46   2                           //主循环中添加其他需要一直工作的程序
+  47   2        }
+  48   1      }
+  49          
+  50          void Delay(unsigned int t)
+  51          {
+  52   1       while(--t);
+  53   1      }
+
+
+C51 COMPILER V8.06   MAIN                                                                  08/16/2017 10:06:58 PAGE 2   
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    129    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

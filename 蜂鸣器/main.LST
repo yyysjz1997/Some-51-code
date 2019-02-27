@@ -1,0 +1,44 @@
+C51 COMPILER V8.06   MAIN                                                                  04/03/2017 21:36:43 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include<reg52.h>
+   2          #define ON 0
+   3          #define OFF 1
+   4          sbit FM=P2^3;
+   5                                                                     
+   6          void delay(unsigned int t)
+   7          {
+   8   1               while(--t)
+   9   1               ;
+  10   1      }
+  11          
+  12          void main()
+  13          {
+  14   1        while(1)
+  15   1        {
+  16   2           FM=ON;
+  17   2               delay(100000);
+  18   2               FM=OFF;
+  19   2               delay(100000); 
+  20   2              }
+  21   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     30    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

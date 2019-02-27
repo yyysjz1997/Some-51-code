@@ -1,0 +1,278 @@
+C51 COMPILER V8.06   MAIN                                                                  08/14/2017 01:17:36 PAGE 1   
+
+
+C51 COMPILER V8.06, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          /************************************************************
+   2           DS1802s是用RAM存储的,掉电后数据肯定会丢失，除非外加纽扣电池
+   3          ***********************************************************/ 
+   4          
+   5          #include <reg52.h>
+   6          #define uchar unsigned char
+   7          #define uint unsigned int
+   8          unsigned char code table[]={
+   9          0x3f  , 0x06 , 0x5b , 0x4f ,
+  10          0x66 , 0x6d ,0x7d , 0x07 , 
+  11          0x7f  , 0x6f , 0x77 , 0x7c ,
+  12          0x39 , 0x5e , 0x79 , 0x71 ,0xbf};
+  13          
+  14          sbit  DS1302_CLK = P2^1;              //实时时钟时钟线引脚
+  15          sbit  DS1302_IO  = P2^0;              //实时时钟数据线引脚
+  16          sbit  DS1302_RST = P2^4;              //实时时钟复位线引脚
+  17          sbit  ACC0 = ACC^0;
+  18          sbit  ACC7 = ACC^7;
+  19          sbit we=P2^7;
+  20          sbit du=P2^6;
+  21          
+  22          typedef struct __SYSTEMTIME__
+  23          {
+  24                  unsigned char Second;
+  25                  unsigned char Minute;
+  26                  unsigned char Hour;
+  27                  unsigned char Week;
+  28                  unsigned char Day;
+  29                  unsigned char Month;
+  30                  unsigned char  Year;
+  31                  unsigned char DateString[9];
+  32                  unsigned char TimeString[9];
+  33          }SYSTEMTIME;    //定义的时间类型
+  34          
+  35          #define AM(X)   X
+  36          #define PM(X)   (X+12)                    // 转成24小时制
+  37          #define DS1302_SECOND   0x80     //写寄存器
+  38          #define DS1302_MINUTE   0x82
+  39          #define DS1302_HOUR             0x84
+  40          #define DS1302_WEEK             0x8A
+  41          #define DS1302_DAY              0x86
+  42          #define DS1302_MONTH    0x88
+  43          #define DS1302_YEAR             0x8C
+  44          #define DS1302_RAM(X)   (0xC0+(X)*2)    //用于计算 DS1302_RAM 地址的宏
+  45          
+  46          void DS1302InputByte(unsigned char d)   //实时时钟写入一字节(内部函数)
+  47          {
+  48   1          unsigned char i;
+  49   1          ACC = d;
+  50   1          for(i=8; i>0; i--)
+  51   1          {
+  52   2              DS1302_IO = ACC0;               //相当于汇编中的 RRC
+  53   2              DS1302_CLK = 1;
+  54   2              DS1302_CLK = 0;
+  55   2              ACC = ACC >> 1;
+C51 COMPILER V8.06   MAIN                                                                  08/14/2017 01:17:36 PAGE 2   
+
+  56   2          }
+  57   1      }
+  58          
+  59          unsigned char DS1302OutputByte(void)    //实时时钟读取一字节(内部函数)
+  60          {
+  61   1          unsigned char i;
+  62   1          for(i=8; i>0; i--)
+  63   1          {
+  64   2              ACC = ACC >>1;                          //相当于汇编中的 RRC
+  65   2              ACC7 = DS1302_IO;
+  66   2              DS1302_CLK = 1;
+  67   2              DS1302_CLK = 0;
+  68   2          }
+  69   1          return(ACC);
+  70   1      }
+  71          
+  72          void Write1302(unsigned char ucAddr, unsigned char ucDa)        //ucAddr: DS1302地址, ucData: 要写的数据
+  73          {
+  74   1          DS1302_RST = 0;
+  75   1          DS1302_CLK = 0;
+  76   1          DS1302_RST = 1;
+  77   1          DS1302InputByte(ucAddr);            // 地址，命令
+  78   1          DS1302InputByte(ucDa);              // 写1Byte数据
+  79   1      //    DS1302_CLK = 1;
+  80   1          DS1302_RST = 0;
+  81   1      }
+  82          
+  83          unsigned char Read1302(unsigned char ucAddr)    //读取DS1302某地址的数据
+  84          {
+  85   1          unsigned char ucData;
+  86   1          DS1302_RST = 0;
+  87   1          DS1302_CLK = 0;
+  88   1          DS1302_RST = 1;
+  89   1          DS1302InputByte(ucAddr|0x01);        // 地址，命令
+  90   1          ucData = DS1302OutputByte();         // 读1Byte数据
+  91   1      //    DS1302_CLK = 1;
+  92   1          DS1302_RST = 0;
+  93   1          return(ucData);
+  94   1      }
+  95          
+  96          void DS1302_SetProtect(bit flag)        //是否写保护
+  97          {
+  98   1              if(flag)
+  99   1                      //Write1302(0x8E,0x10);   //应该是0x80才对
+ 100   1                      Write1302(0x8E,0x80);  
+ 101   1              else
+ 102   1                      Write1302(0x8E,0x00);
+ 103   1      }
+ 104          
+ 105          void DS1302_SetTime(unsigned char Address, unsigned char Value)        // 设置时间函数
+ 106          {
+ 107   1              DS1302_SetProtect(0);
+ 108   1              Write1302(Address, ((Value/10)<<4 | (Value%10)));  //生成BCD码
+ 109   1      }
+ 110          
+ 111          void DS1302_GetTime(SYSTEMTIME *Time)
+ 112          {
+ 113   1              unsigned char ReadValue;
+ 114   1              ReadValue = Read1302(DS1302_SECOND);
+ 115   1              Time->Second = ((ReadValue&0x70)>>4)*10 + (ReadValue&0x0F);     //八进制转换成十进制
+ 116   1              ReadValue = Read1302(DS1302_MINUTE);
+ 117   1              Time->Minute = ((ReadValue&0x70)>>4)*10 + (ReadValue&0x0F);
+C51 COMPILER V8.06   MAIN                                                                  08/14/2017 01:17:36 PAGE 3   
+
+ 118   1              ReadValue = Read1302(DS1302_HOUR);
+ 119   1              Time->Hour = ((ReadValue&0x70)>>4)*10 + (ReadValue&0x0F);
+ 120   1              ReadValue = Read1302(DS1302_DAY);
+ 121   1              Time->Day = ((ReadValue&0x70)>>4)*10 + (ReadValue&0x0F);
+ 122   1              ReadValue = Read1302(DS1302_WEEK);
+ 123   1              Time->Week = ((ReadValue&0x70)>>4)*10 + (ReadValue&0x0F);
+ 124   1              ReadValue = Read1302(DS1302_MONTH);
+ 125   1              Time->Month = ((ReadValue&0x70)>>4)*10 + (ReadValue&0x0F);
+ 126   1              ReadValue = Read1302(DS1302_YEAR);
+ 127   1              Time->Year = ((ReadValue&0x70)>>4)*10 + (ReadValue&0x0F);
+ 128   1      }
+ 129          
+ 130          void DateToStr(SYSTEMTIME *Time)         //转化为字符串
+ 131          {
+ 132   1              Time->DateString[0] = Time->Year/10 ;    //分离出个位和十位
+ 133   1              Time->DateString[1] = Time->Year%10 ;
+ 134   1              Time->DateString[2] = '-';
+ 135   1              Time->DateString[3] = Time->Month/10;
+ 136   1              Time->DateString[4] = Time->Month%10 ;
+ 137   1              Time->DateString[5] = '-';
+ 138   1              Time->DateString[6] = Time->Day/10 ;
+ 139   1              Time->DateString[7] = Time->Day%10 ;
+ 140   1              Time->DateString[8] = '\0';
+ 141   1      }
+ 142          
+ 143          void TimeToStr(SYSTEMTIME *Time)
+ 144          {
+ 145   1              Time->TimeString[0] = Time->Hour/10 ;
+ 146   1              Time->TimeString[1] = Time->Hour%10 ;
+ 147   1              Time->TimeString[2] = ':';
+ 148   1              Time->TimeString[3] = Time->Minute/10 ;
+ 149   1              Time->TimeString[4] = Time->Minute%10 ;
+ 150   1              Time->TimeString[5] = ':';
+ 151   1              Time->TimeString[6] = Time->Second/10;
+ 152   1              Time->TimeString[7] = Time->Second%10 ;
+ 153   1              Time->DateString[8] = '\0';
+ 154   1      }
+ 155          
+ 156          void Initial_DS1302(void)
+ 157          {
+ 158   1              unsigned char Second=Read1302(DS1302_SECOND);
+ 159   1              if(Second&0x80)
+ 160   1                      DS1302_SetTime(DS1302_SECOND,0);
+ 161   1      }
+ 162          
+ 163          void delay()   //这样显示效果最好
+ 164          {
+ 165   1              int x,y;
+ 166   1              for(x=2;x>0;x--)
+ 167   1                      for(y=160;y>0;y--);
+ 168   1      }
+ 169          
+ 170          void display(uchar sw,uchar wan,uchar qian,uchar bai,uchar shi,uchar ge)
+ 171          {
+ 172   1              we=1;
+ 173   1              P0=0xfe;
+ 174   1              we=0;
+ 175   1              P0=0;
+ 176   1              du=1;
+ 177   1              P0=sw;
+ 178   1              du=0;
+ 179   1              delay();
+C51 COMPILER V8.06   MAIN                                                                  08/14/2017 01:17:36 PAGE 4   
+
+ 180   1      
+ 181   1              we=1;
+ 182   1              P0=0xfd;
+ 183   1              we=0;
+ 184   1              P0=0;
+ 185   1              du=1;
+ 186   1              P0=wan;
+ 187   1              du=0;
+ 188   1              delay();
+ 189   1      
+ 190   1              we=1;
+ 191   1              P0=0xf7;
+ 192   1              we=0;
+ 193   1              P0=0;
+ 194   1              du=1;
+ 195   1              P0=qian;
+ 196   1              du=0;
+ 197   1              delay();
+ 198   1      
+ 199   1              we=1;
+ 200   1              P0=0xef;
+ 201   1              we=0;
+ 202   1              P0=0;
+ 203   1              du=1;
+ 204   1              P0=bai;
+ 205   1              du=0;
+ 206   1              delay();
+ 207   1      
+ 208   1              we=1;
+ 209   1              P0=0xbf;
+ 210   1              we=0;
+ 211   1              P0=0;
+ 212   1              du=1;
+ 213   1              P0=shi;
+ 214   1              du=0;
+ 215   1              delay();
+ 216   1      
+ 217   1              we=1;
+ 218   1              P0=0x7f;
+ 219   1              we=0;
+ 220   1              P0=0;
+ 221   1              du=1;
+ 222   1              P0=ge;
+ 223   1              du=0;
+ 224   1              delay();
+ 225   1      }
+ 226          
+ 227          void main()
+ 228          {
+ 229   1              uchar t0,t1,t2,t3,t4,t5;
+ 230   1              SYSTEMTIME CurrentTime;
+ 231   1              Initial_DS1302();
+ 232   1              DS1302_SetTime(DS1302_HOUR,10); //设置的时间是10：54：30
+ 233   1              DS1302_SetTime(DS1302_MINUTE,54);
+ 234   1              DS1302_SetTime(DS1302_SECOND,30);   
+ 235   1              while(1)
+ 236   1              {
+ 237   2                      DS1302_GetTime(&CurrentTime);
+ 238   2                      TimeToStr(&CurrentTime);
+ 239   2                      t0=CurrentTime.TimeString[0];
+ 240   2                      t1=CurrentTime.TimeString[1];
+ 241   2                      t2=CurrentTime.TimeString[3];
+C51 COMPILER V8.06   MAIN                                                                  08/14/2017 01:17:36 PAGE 5   
+
+ 242   2                      t3=CurrentTime.TimeString[4];
+ 243   2                      t4=CurrentTime.TimeString[6];
+ 244   2                      t5=CurrentTime.TimeString[7];
+ 245   2                      display(table[t0],table[t1],table[t2],table[t3],table[t4],table[t5]);
+ 246   2              }
+ 247   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    789    ----
+   CONSTANT SIZE    =     17    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      36
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

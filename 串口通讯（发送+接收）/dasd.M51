@@ -1,0 +1,126 @@
+BL51 BANKED LINKER/LOCATER V6.05                                                        08/09/2017  17:38:25  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.05, INVOKED BY:
+C:\KEIL\C51\BIN\BL51.EXE main.obj TO dasd RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  main.obj (MAIN)
+  C:\KEIL\C51\LIB\C51S.LIB (?C_STARTUP)
+
+
+LINK MAP OF MODULE:  dasd (MAIN)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0002H     UNIT         ?DT?MAIN
+            IDATA   000AH     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+                    0003H     0020H                  *** GAP ***
+            CODE    0023H     0003H     ABSOLUTE     
+                    0026H     07DAH                  *** GAP ***
+            CODE    0800H     002BH     UNIT         ?PR?MAIN?MAIN
+            CODE    082BH     000CH     UNIT         ?PR?SER?MAIN
+            CODE    0837H     000CH     UNIT         ?C_C51STARTUP
+
+
+
+OVERLAY MAP OF MODULE:   dasd (MAIN)
+
+
+SEGMENT
+  +--> CALLED SEGMENT
+---------------------
+?C_C51STARTUP
+  +--> ?PR?MAIN?MAIN
+
+
+
+SYMBOL TABLE OF MODULE:  dasd (MAIN)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        MAIN
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0090H         PUBLIC        P1
+  D:00B0H         PUBLIC        P3
+  B:00A8H.7       PUBLIC        EA
+  D:00A8H         PUBLIC        IE
+  B:00A8H.4       PUBLIC        ES
+  D:00B8H         PUBLIC        IP
+BL51 BANKED LINKER/LOCATER V6.05                                                      08/09/2017  17:38:25  PAGE 2
+
+
+  B:0098H.0       PUBLIC        RI
+  D:0008H         PUBLIC        flag
+  B:0098H.1       PUBLIC        TI
+  C:0800H         PUBLIC        main
+  D:0099H         PUBLIC        SBUF
+  D:0098H         PUBLIC        SCON
+  D:0089H         PUBLIC        TMOD
+  D:0088H         PUBLIC        TCON
+  C:082BH         PUBLIC        ser
+  D:008DH         PUBLIC        TH1
+  B:0098H.7       PUBLIC        SM0
+  B:0098H.6       PUBLIC        SM1
+  D:008BH         PUBLIC        TL1
+  B:0088H.6       PUBLIC        TR1
+  D:0009H         PUBLIC        a
+  B:0098H.4       PUBLIC        REN
+  D:00C8H         PUBLIC        T2CON
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          MAIN
+  C:0800H         LINE#         5
+  C:0800H         LINE#         6
+  C:0800H         LINE#         7
+  C:0803H         LINE#         8
+  C:0806H         LINE#         9
+  C:0809H         LINE#         10
+  C:080BH         LINE#         11
+  C:080DH         LINE#         12
+  C:080FH         LINE#         13
+  C:0811H         LINE#         14
+  C:0813H         LINE#         15
+  C:0815H         LINE#         17
+  C:0815H         LINE#         18
+  C:0815H         LINE#         19
+  C:081AH         LINE#         20
+  C:081AH         LINE#         21
+  C:081CH         LINE#         22
+  C:081FH         LINE#         23
+  C:0822H         LINE#         24
+  C:0825H         LINE#         25
+  C:0827H         LINE#         26
+  C:0829H         LINE#         27
+  C:0829H         LINE#         28
+  -------         ENDPROC       MAIN
+  -------         PROC          SER
+  C:082BH         LINE#         31
+  C:082BH         LINE#         33
+  C:082DH         LINE#         34
+  C:0830H         LINE#         35
+  C:0833H         LINE#         36
+  C:0836H         LINE#         37
+  -------         ENDPROC       SER
+  -------         ENDMOD        MAIN
+
+******************************************************************************
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 003AH BYTE ( 2%) *
+******************************************************************************
+
+BL51 BANKED LINKER/LOCATER V6.05                                                      08/09/2017  17:38:25  PAGE 3
+
+
+Program Size: data=11.0 xdata=0 code=73
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,39 @@
+<html>
+<body>
+<pre>
+<h1>礦ision3 Build Log</h1>
+<h2>Project:</h2>
+C:\Users\yyy\Desktop\学习\51自己程序\中断优先级的判断\ret.uv2
+Project File Date:  08/16/2017
+
+<h2>Output:</h2>
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAY?MAIN
+Program Size: data=9.0 xdata=0 code=58
+"ret" - 0 个错误, 1 个警告。
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAY?MAIN
+Program Size: data=9.0 xdata=0 code=72
+"ret" - 0 个错误, 1 个警告。
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAY?MAIN
+Program Size: data=9.0 xdata=0 code=72
+创建 HEX 文件 "ret" ...
+"ret" - 0 个错误, 1 个警告。
+创建目标 '目标 1'
+编译 main.c ...
+连接 ...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAY?MAIN
+Program Size: data=9.0 xdata=0 code=72
+创建 HEX 文件 "ret" ...
+"ret" - 0 个错误, 1 个警告。
